@@ -1,0 +1,18 @@
+export const C = {
+  pri: "#1E3A5F",
+  priDk: "#0F1F38",
+  priLt: "#2D5F8A",
+  acc: "#D4A843",
+  accLt: "#F0DCA0",
+  sky: "#EAF1F8",
+  skyDp: "#C4D9ED",
+  bg: "#F5F7FA",
+  white: "#FFFFFF",
+  text: "#1A2340",
+  sub: "#6B7A94",
+  bdr: "#DDE1E9",
+  danger: "#D63031",
+  success: "#27AE60",
+  card: "#FFFFFF",
+  bkm: "#E67E22",
+};

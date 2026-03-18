@@ -1,0 +1,195 @@
+// ===== AIRPORTS =====
+export const AIRPORTS = [
+  { code: "HND", name: "羽田", region: "関東" },
+  { code: "NRT", name: "成田", region: "関東" },
+  { code: "ITM", name: "伊丹", region: "関西" },
+  { code: "KIX", name: "関西", region: "関西" },
+  { code: "CTS", name: "新千歳", region: "北海道" },
+  { code: "OKA", name: "那覇", region: "沖縄" },
+  { code: "ISG", name: "石垣", region: "沖縄" },
+  { code: "MMY", name: "宮古", region: "沖縄" },
+  { code: "FUK", name: "福岡", region: "九州" },
+  { code: "NGO", name: "中部", region: "中部" },
+  { code: "SDJ", name: "仙台", region: "東北" },
+  { code: "HIJ", name: "広島", region: "中国" },
+  { code: "KOJ", name: "鹿児島", region: "九州" },
+  { code: "NGS", name: "長崎", region: "九州" },
+  { code: "KMJ", name: "熊本", region: "九州" },
+  { code: "MYJ", name: "松山", region: "四国" },
+  { code: "TAK", name: "高松", region: "四国" },
+  { code: "KMQ", name: "小松", region: "北陸" },
+  // Asia
+  { code: "ICN", name: "ソウル仁川", region: "アジア" },
+  { code: "GMP", name: "ソウル金浦", region: "アジア" },
+  { code: "PVG", name: "上海浦東", region: "アジア" },
+  { code: "HKG", name: "香港", region: "アジア" },
+  { code: "TPE", name: "台北", region: "アジア" },
+  { code: "BKK", name: "バンコク", region: "アジア" },
+  { code: "SIN", name: "シンガポール", region: "アジア" },
+  { code: "KUL", name: "クアラルンプール", region: "アジア" },
+  { code: "HAN", name: "ハノイ", region: "アジア" },
+  { code: "SGN", name: "ホーチミン", region: "アジア" },
+  { code: "MNL", name: "マニラ", region: "アジア" },
+  { code: "CGK", name: "ジャカルタ", region: "アジア" },
+  { code: "DEL", name: "デリー", region: "アジア" },
+  { code: "RGN", name: "ヤンゴン", region: "アジア" },
+  { code: "PNH", name: "プノンペン", region: "アジア" },
+  // Oceania
+  { code: "SYD", name: "シドニー", region: "オセアニア" },
+  { code: "PER", name: "パース", region: "オセアニア" },
+  // Hawaii / Americas
+  { code: "HNL", name: "ホノルル", region: "ハワイ・北米" },
+  { code: "LAX", name: "ロサンゼルス", region: "ハワイ・北米" },
+  { code: "SFO", name: "サンフランシスコ", region: "ハワイ・北米" },
+  { code: "JFK", name: "ニューヨーク", region: "ハワイ・北米" },
+  { code: "ORD", name: "シカゴ", region: "ハワイ・北米" },
+  { code: "IAD", name: "ワシントンD.C.", region: "ハワイ・北米" },
+  { code: "SEA", name: "シアトル", region: "ハワイ・北米" },
+  { code: "YVR", name: "バンクーバー", region: "ハワイ・北米" },
+  { code: "IAH", name: "ヒューストン", region: "ハワイ・北米" },
+  { code: "MEX", name: "メキシコシティ", region: "ハワイ・北米" },
+  // Europe
+  { code: "LHR", name: "ロンドン", region: "ヨーロッパ" },
+  { code: "CDG", name: "パリ", region: "ヨーロッパ" },
+  { code: "FRA", name: "フランクフルト", region: "ヨーロッパ" },
+  { code: "MUC", name: "ミュンヘン", region: "ヨーロッパ" },
+  { code: "VIE", name: "ウィーン", region: "ヨーロッパ" },
+  { code: "BRU", name: "ブリュッセル", region: "ヨーロッパ" },
+  { code: "VVO", name: "ウラジオストク", region: "ヨーロッパ" },
+  { code: "IST", name: "イスタンブール", region: "ヨーロッパ" },
+];
+
+// ===== ROUTES (Base mileage) =====
+export const ROUTES: Record<string, number> = {
+  // Domestic
+  "HND-OKA": 984, "HND-ISG": 1224, "HND-MMY": 1158, "HND-CTS": 510,
+  "HND-FUK": 567, "HND-ITM": 280, "HND-NGO": 193, "HND-SDJ": 177,
+  "HND-HIJ": 414, "HND-KOJ": 601, "HND-NGS": 610, "HND-KMJ": 568,
+  "HND-MYJ": 438, "HND-TAK": 354, "HND-KMQ": 211,
+  "ITM-OKA": 739, "ITM-CTS": 666, "ITM-ISG": 969, "ITM-FUK": 287,
+  "ITM-SDJ": 396, "ITM-NGS": 330,
+  "CTS-OKA": 1397, "CTS-FUK": 882, "CTS-NGO": 614, "CTS-SDJ": 335,
+  "NGO-OKA": 809, "NGO-CTS": 614, "NGO-FUK": 374, "FUK-OKA": 537,
+  // International - Asia
+  "HND-ICN": 758, "NRT-ICN": 758, "HND-GMP": 758,
+  "HND-PVG": 1111, "NRT-PVG": 1111,
+  "HND-HKG": 1823, "NRT-HKG": 1823,
+  "HND-TPE": 1330, "NRT-TPE": 1330,
+  "HND-BKK": 2869, "NRT-BKK": 2869,
+  "HND-SIN": 3312, "NRT-SIN": 3312,
+  "HND-KUL": 3345, "NRT-KUL": 3345,
+  "HND-HAN": 2294, "NRT-HAN": 2294,
+  "HND-SGN": 2706, "NRT-SGN": 2706,
+  "HND-MNL": 1880, "NRT-MNL": 1880,
+  "HND-CGK": 3612, "NRT-CGK": 3612,
+  "HND-DEL": 3656, "NRT-DEL": 3656,
+  "HND-RGN": 2984, "NRT-RGN": 2984,
+  "HND-PNH": 2759, "NRT-PNH": 2759,
+  // International - Oceania
+  "HND-SYD": 4863, "NRT-SYD": 4863,
+  "HND-PER": 4926, "NRT-PER": 4926,
+  // International - Hawaii/Americas
+  "HND-HNL": 3831, "NRT-HNL": 3831,
+  "HND-LAX": 5458, "NRT-LAX": 5458,
+  "HND-SFO": 5130, "NRT-SFO": 5130,
+  "HND-JFK": 6739, "NRT-JFK": 6739,
+  "HND-ORD": 6283, "NRT-ORD": 6283,
+  "HND-IAD": 6762, "NRT-IAD": 6762,
+  "HND-SEA": 4775, "NRT-SEA": 4775,
+  "HND-YVR": 4681, "NRT-YVR": 4681,
+  "HND-IAH": 6658, "NRT-IAH": 6658,
+  "HND-MEX": 7003, "NRT-MEX": 7003,
+  // International - Europe
+  "HND-LHR": 6220, "NRT-LHR": 6220,
+  "HND-CDG": 6207, "NRT-CDG": 6207,
+  "HND-FRA": 5929, "NRT-FRA": 5929,
+  "HND-MUC": 5866, "NRT-MUC": 5866,
+  "HND-VIE": 5699, "NRT-VIE": 5699,
+  "HND-BRU": 6067, "NRT-BRU": 6067,
+  "HND-VVO": 676, "NRT-VVO": 676,
+  "HND-IST": 5748, "NRT-IST": 5748,
+};
+
+// ===== FARES =====
+export interface Fare {
+  id: string;
+  name: string;
+  rate: number;
+  boarding: number;
+  desc?: string;
+  cls?: string;
+}
+
+export const OLD_DOMESTIC_FARES: Fare[] = [
+  { id: "old-1", name: "プレミアム運賃", rate: 1.5, boarding: 400, desc: "プレミアムクラス正規", cls: "premium" },
+  { id: "old-2", name: "プレミアム特割/SVP28", rate: 1.25, boarding: 400, desc: "プレミアム早割", cls: "premium" },
+  { id: "old-3", name: "ANA FLEX（普通運賃）", rate: 1.0, boarding: 400, desc: "普通席正規", cls: "economy" },
+  { id: "old-4", name: "ビジネスきっぷ", rate: 1.0, boarding: 400, desc: "法人向け", cls: "economy" },
+  { id: "old-5", name: "ANA VALUE/株主優待", rate: 0.75, boarding: 400, desc: "割引運賃", cls: "economy" },
+  { id: "old-6", name: "ANA SUPER VALUE 21/28等", rate: 0.75, boarding: 0, desc: "21日前〜早割", cls: "economy" },
+  { id: "old-7", name: "ANA SUPER VALUE EARLY", rate: 0.75, boarding: 0, desc: "早期割引", cls: "economy" },
+  { id: "old-8", name: "個人包括旅行運賃", rate: 0.5, boarding: 0, desc: "ツアー運賃", cls: "economy" },
+];
+
+export const NEW_DOMESTIC_FARES: Fare[] = [
+  { id: "new-f-flex", name: "ファースト フレックス", rate: 1.5, boarding: 400, desc: "旧プレミアム運賃相当", cls: "first" },
+  { id: "new-f-std", name: "ファースト スタンダード", rate: 1.3, boarding: 400, desc: "旧プレミアム特割相当", cls: "first" },
+  { id: "new-f-sim", name: "ファースト シンプル", rate: 1.2, boarding: 400, desc: "ファースト最安", cls: "first" },
+  { id: "new-e-flex", name: "エコノミー フレックス", rate: 1.0, boarding: 400, desc: "当日変更可・正規運賃", cls: "economy" },
+  { id: "new-e-std", name: "エコノミー スタンダード", rate: 0.8, boarding: 200, desc: "事前座席指定可・おすすめ", cls: "economy" },
+  { id: "new-e-sim", name: "エコノミー シンプル", rate: 0.7, boarding: 100, desc: "最安・座席指定24h前〜", cls: "economy" },
+  { id: "new-biz", name: "Biz運賃", rate: 1.0, boarding: 400, desc: "法人向け", cls: "economy" },
+  { id: "new-card", name: "ANAカード優待割引", rate: 1.0, boarding: 400, desc: "ANAカード会員専用", cls: "economy" },
+  { id: "new-kabu", name: "株主優待割引", rate: 0.8, boarding: 400, desc: "株主優待", cls: "economy" },
+  { id: "new-pkg", name: "個人包括旅行運賃", rate: 0.5, boarding: 0, desc: "ツアー運賃", cls: "economy" },
+];
+
+export const INTL_FARES: Fare[] = [
+  { id: "F", name: "ファースト（F）", rate: 1.5, boarding: 400 },
+  { id: "A", name: "ファースト割引（A）", rate: 1.5, boarding: 400 },
+  { id: "J", name: "ビジネス（J）", rate: 1.5, boarding: 400 },
+  { id: "C/D", name: "ビジネス割引（C/D）", rate: 1.25, boarding: 400 },
+  { id: "Z", name: "ビジネス割引（Z）", rate: 1.25, boarding: 400 },
+  { id: "P", name: "ビジネス特割（P）", rate: 0.7, boarding: 400 },
+  { id: "G", name: "プレエコ（G）", rate: 1.0, boarding: 400 },
+  { id: "E", name: "プレエコ割引（E）", rate: 1.0, boarding: 400 },
+  { id: "N", name: "プレエコ割引（N）", rate: 0.7, boarding: 0 },
+  { id: "Y/B/M", name: "エコノミー（Y/B/M）", rate: 1.0, boarding: 400 },
+  { id: "U/H/Q", name: "エコノミー割引（U/H/Q）", rate: 0.7, boarding: 0 },
+  { id: "V/W/S/T", name: "エコノミー割引（V/W/S/T）", rate: 0.5, boarding: 0 },
+  { id: "L/K", name: "エコノミー特割（L/K）", rate: 0.3, boarding: 0 },
+];
+
+export const FARE_HELP: Record<string, string[]> = {
+  "old-1": ["プレミアム運賃", "プレミアム障がい者割引運賃"],
+  "old-2": ["ANA VALUE PREMIUM 3", "ANA SUPER VALUE PREMIUM 28", "プレミアム株主優待割引運賃", "プレミアムビジネスきっぷ"],
+  "old-3": ["ANA FLEX A〜D", "障がい者割引運賃", "介護割引"],
+  "old-4": ["ビジネスきっぷ", "プレミアムBiz", "Biz"],
+  "old-5": ["ANA VALUE 1/3/7", "株主優待割引運賃", "スマートU25", "スマートシニア空割", "ANA VALUE TRANSIT"],
+  "old-6": ["ANA SUPER VALUE 21/28/45/55/75", "ANA SUPER VALUE TRANSIT 21〜75", "いっしょにマイル割"],
+  "old-7": ["ANA SUPER VALUE EARLY", "ANA SUPER VALUE SALE"],
+  "old-8": ["個人包括旅行運賃（ツアー用）"],
+  "new-f-flex": ["ファースト フレックス（旧プレミアム運賃相当）"],
+  "new-f-std": ["ファースト スタンダード（旧プレミアム特割相当）"],
+  "new-f-sim": ["ファースト シンプル（ファーストクラス最安）"],
+  "new-e-flex": ["エコノミー フレックス（旧ANA FLEX相当）", "障がい者割引", "介護割引"],
+  "new-e-std": ["エコノミー スタンダード（旧ANA VALUE相当）", "事前座席指定可"],
+  "new-e-sim": ["エコノミー シンプル（旧SUPER VALUE相当）", "座席指定は出発24h前〜"],
+  "new-biz": ["Biz運賃（法人契約向け）"],
+  "new-card": ["ANAカード割引（ANAカード会員専用）"],
+  "new-kabu": ["株主優待割引運賃"],
+  "new-pkg": ["個人包括旅行運賃（ツアー用）"],
+  "F": ["ファーストクラス正規運賃（FullFlex/Flex）", "eチケットのクラス欄が「F」"],
+  "A": ["ファーストクラス割引運賃（Flex Plus/Basic）", "eチケットのクラス欄が「A」"],
+  "J": ["ビジネスクラス正規運賃（FullFlex/Flex）", "eチケットのクラス欄が「J」"],
+  "C/D": ["ビジネスクラス割引（Flex Plus/Basic Plus）", "eチケットのクラス欄が「C」または「D」", "予約変更可・UG対象"],
+  "Z": ["ビジネスクラス割引（Basic/Value）", "eチケットのクラス欄が「Z」", "路線により設定あり"],
+  "P": ["ビジネスクラス特割（Super Value等）", "eチケットのクラス欄が「P」", "70%積算だがビジネスシート確約"],
+  "G": ["プレミアムエコノミー正規運賃（Flex）", "eチケットのクラス欄が「G」"],
+  "E": ["プレミアムエコノミー割引（Basic Plus/Value Plus）", "eチケットのクラス欄が「E」", "100%積算でプレエコ最コスパ"],
+  "N": ["プレミアムエコノミー割引（Super Value等）", "eチケットのクラス欄が「N」", "70%積算・搭乗ポイントなし"],
+  "Y/B/M": ["エコノミー正規〜割引（FullFlex/Flex/Basic）", "eチケットのクラス欄が「Y」「B」「M」", "全て100%積算・Mは修行で最人気"],
+  "U/H/Q": ["エコノミー割引（Value Plus/Value）", "eチケットのクラス欄が「U」「H」「Q」", "70%積算・UのみUG対象"],
+  "V/W/S/T": ["エコノミー格安（Value/Super Value）", "eチケットのクラス欄が「V」「W」「S」「T」", "50%積算・変更不可が多い"],
+  "L/K": ["エコノミー最安（Super Value等）", "eチケットのクラス欄が「L」または「K」", "30%積算・修行には非推奨"],
+};

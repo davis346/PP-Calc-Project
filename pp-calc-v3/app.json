@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "PP計算機",
+    "slug": "pp-calc-v3",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A2540"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.minor7.ppcalc",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#1A2540"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.minor7.ppcalc"
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a929b7ae-b85b-47c0-aa6e-1f0190687162"
+      }
+    }
+  }
+}
