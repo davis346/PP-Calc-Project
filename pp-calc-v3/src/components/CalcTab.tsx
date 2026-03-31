@@ -90,8 +90,8 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
     const mult = getRouteMultiplier(dep, arr);
     const { flightMile, pp } = calcPP(bm, fare.rate, mult, fare.boarding);
     const totalPP = isRound ? pp * 2 : pp;
-    const ppUnit = price ? Math.round((Number(price) / totalPP) * 100) / 100 : null;
-    const trips = Math.ceil(50000 / (pp * 2));
+    const numPrice = Number(price.replace(/[^0-9]/g, ""));
+    const ppUnit = numPrice > 0 ? Math.round((numPrice / totalPP) * 100) / 100 : null;    const trips = Math.ceil(50000 / (pp * 2));
     setResult({ bm, fare, mult, flightMile, pp, totalPP, ppUnit, trips, isRound });
   }, [dep, arr, fareId, price, isRound, fares]);
 
