@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { C } from '../utils/colors';
 import { HistoryItem } from '../utils/types';
 
@@ -12,6 +12,21 @@ export default function DashTab({ history, setHistory }: Props) {
   const totalPP = history.reduce((s, h) => s + h.pp, 0);
   const totalCost = history.reduce((s, h) => s + h.price, 0);
   const prog = Math.min((totalPP / 50000) * 100, 100);
+
+  const handleClearAll = () => {
+    Alert.alert(
+      '搭乗履歴を全削除',
+      `${history.length}件の搭乗履歴をすべて削除しますか？`,
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '全削除',
+          style: 'destructive',
+          onPress: () => setHistory([]),
+        },
+      ]
+    );
+  };
 
   return (
     <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 30 }}>
@@ -53,11 +68,14 @@ export default function DashTab({ history, setHistory }: Props) {
       <View style={s.historyCard}>
         <View style={s.historyHeader}>
           <Text style={s.historyTitle}>搭乗履歴</Text>
-          {history.length > 0 && (
-            <TouchableOpacity onPress={() => setHistory([])}>
-              <Text style={s.deleteAll}>すべて削除</Text>
-            </TouchableOpacity>
-          )}
+          <View style={s.headerRight}>
+            <Text style={s.headerCount}>{history.length}件</Text>
+            {history.length > 0 && (
+              <TouchableOpacity onPress={handleClearAll} style={s.clearBtn}>
+                <Text style={s.clearBtnText}>全削除</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {history.length === 0 ? (
@@ -67,13 +85,21 @@ export default function DashTab({ history, setHistory }: Props) {
         ) : (
           history.map((h, i) => (
             <View key={h.id} style={[s.historyItem, { backgroundColor: i % 2 === 0 ? C.white : C.bg }]}>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={s.histRoute}>{h.route}</Text>
                 <Text style={s.histSub}>{h.date} {h.price > 0 ? `¥${h.price.toLocaleString()}` : ""}</Text>
               </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={s.histPP}>+{h.pp.toLocaleString()}</Text>
-                {h.ppUnit > 0 && <Text style={s.histUnit}>単価{h.ppUnit.toFixed(1)}円</Text>}
+              <View style={{ alignItems: 'flex-end', flexDirection: 'row', gap: 8 }}>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={s.histPP}>+{h.pp.toLocaleString()}</Text>
+                  {h.ppUnit > 0 && <Text style={s.histUnit}>単価{h.ppUnit.toFixed(1)}円</Text>}
+                </View>
+                <TouchableOpacity
+                  onPress={() => setHistory(history.filter(x => x.id !== h.id))}
+                  style={s.deleteAction}
+                >
+                  <Text style={s.deleteActionText}>削除</Text>
+                </TouchableOpacity>
               </View>
             </View>
           ))
@@ -102,13 +128,18 @@ const s = StyleSheet.create({
   statUnit: { fontSize: 10, fontWeight: '400', color: C.sub },
   historyCard: { backgroundColor: C.card, borderRadius: 14, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
   historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: C.bdr },
-  historyTitle: { fontSize: 12, fontWeight: '700', color: C.text },
-  deleteAll: { fontSize: 10, color: C.danger },
+  historyTitle: { fontSize: 13, fontWeight: '700', color: C.text },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headerCount: { fontSize: 11, color: C.sub },
+  clearBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: C.danger },
+  clearBtnText: { fontSize: 11, fontWeight: '600', color: C.danger },
   emptyHistory: { padding: 28, alignItems: 'center' },
   emptyText: { fontSize: 12, color: C.sub, textAlign: 'center' },
-  historyItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: C.bdr },
+  historyItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: C.bdr },
   histRoute: { fontSize: 12, fontWeight: '600', color: C.text },
   histSub: { fontSize: 9, color: C.sub, marginTop: 2 },
   histPP: { fontSize: 15, fontWeight: '700', color: C.pri },
   histUnit: { fontSize: 9, color: C.sub },
+  deleteAction: { paddingVertical: 7, paddingHorizontal: 14, borderRadius: 6, borderWidth: 1, borderColor: C.danger },
+  deleteActionText: { fontSize: 11, fontWeight: '600', color: C.danger },
 });
