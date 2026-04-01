@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { C } from '../utils/colors';
-import { getProducts, purchasePro, restorePurchases, setPurchaseListener } from '../utils/iapManager';
+import { getProducts, purchasePro, restorePurchases, setPurchaseListener, initIAP, disconnectIAP } from '../utils/iapManager';
 
 interface Props {
   onClose: () => void;
@@ -36,7 +36,9 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
   const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
+    // Connect to IAP only when this screen is open, not on app startup.
     (async () => {
+      await initIAP();
       const products = await getProducts();
       if (products.length > 0) {
         setPrice(products[0].price || "¥500");
@@ -50,6 +52,9 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
         onPurchased();
       }
     });
+
+    // Disconnect when screen closes to avoid keeping a live IAP session.
+    return () => { disconnectIAP(); };
   }, []);
 
   const handlePurchase = async () => {

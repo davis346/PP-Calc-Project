@@ -14,15 +14,21 @@ try {
 
 const isNativeAvailable = () => InAppPurchases !== null;
 
-export async function initIAP(): Promise<void> {
+// ─── Internal only. Connect lazily when the upgrade screen opens. ──────────
+async function connectIAP(): Promise<void> {
   if (!isNativeAvailable()) return;
   try {
     await InAppPurchases.connectAsync();
   } catch {}
 }
 
+// Call when the Pro upgrade screen OPENS.
+export async function initIAP(): Promise<void> {
+  await connectIAP();
+}
+
 export async function getProducts() {
-  if (!isNativeAvailable()) return [{ productId: PRO_PRODUCT_ID, price: '¥480', title: 'PP計算機 Pro' }];
+  if (!isNativeAvailable()) return [{ productId: PRO_PRODUCT_ID, price: '¥500', title: 'PP計算機 Pro' }];
   try {
     const { results } = await InAppPurchases.getProductsAsync([PRO_PRODUCT_ID]);
     return results;

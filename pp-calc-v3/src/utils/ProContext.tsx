@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { isProUser, initIAP } from './iapManager';
+import { isProUser } from './iapManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ProContextType {
@@ -32,7 +32,7 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      await initIAP();
+      // isProUser() reads from AsyncStorage only — no IAP connection needed on startup.
       const pro = await isProUser();
       setIsPro(pro);
 
