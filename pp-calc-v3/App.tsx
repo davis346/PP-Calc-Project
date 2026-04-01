@@ -79,6 +79,27 @@ const h = StyleSheet.create({
   barText: { fontSize: 9, color: 'rgba(255,255,255,0.4)' },
 });
 
+function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+  return (
+    <View style={[ti.wrap, focused && ti.wrapActive]}>
+      <Text style={{ fontSize: 20 }}>{emoji}</Text>
+    </View>
+  );
+}
+
+const ti = StyleSheet.create({
+  wrap: {
+    width: 44,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wrapActive: {
+    backgroundColor: C.pri, // same as header (#1E3A5F)
+  },
+});
+
 function AppContent() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
@@ -138,7 +159,9 @@ function AppContent() {
         >
           <Tab.Screen
             name="PP計算"
-            options={{ tabBarIcon: () => <Text style={{ fontSize: 22 }}>✏️</Text> }}
+            options={{
+              tabBarIcon: ({ focused }) => <TabIcon emoji="✏️" focused={focused} />,
+            }}
           >
             {() => (
               <CalcTab
@@ -154,14 +177,18 @@ function AppContent() {
 
           <Tab.Screen
             name="ダッシュボード"
-            options={{ tabBarIcon: () => <Text style={{ fontSize: 22 }}>📊</Text> }}
+            options={{
+              tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
+            }}
           >
             {() => <DashTab history={history} setHistory={setHistory} />}
           </Tab.Screen>
 
           <Tab.Screen
             name="フライト管理"
-            options={{ tabBarIcon: () => <Text style={{ fontSize: 22 }}>🗓️</Text> }}
+            options={{
+              tabBarIcon: ({ focused }) => <TabIcon emoji="🗓️" focused={focused} />,
+            }}
           >
             {() => (
               <ListTab
@@ -175,7 +202,7 @@ function AppContent() {
           <Tab.Screen
             name="お気に入り"
             options={{
-              tabBarIcon: () => <Text style={{ fontSize: 22 }}>⭐</Text>,
+              tabBarIcon: ({ focused }) => <TabIcon emoji="⭐" focused={focused} />,
               tabBarBadge: bookmarks.length > 0 ? bookmarks.length : undefined,
             }}
           >
@@ -193,7 +220,6 @@ function AppContent() {
         </Tab.Navigator>
       </NavigationContainer>
 
-      {/* Pro Upgrade Modal */}
       <Modal visible={showProModal} animationType="slide" presentationStyle="pageSheet">
         <ProUpgradeScreen
           onClose={() => setShowProModal(false)}
