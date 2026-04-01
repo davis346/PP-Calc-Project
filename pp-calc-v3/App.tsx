@@ -183,6 +183,7 @@ function AppContent() {
               <BookmarkTab
                 bookmarks={bookmarks}
                 toggleBookmark={toggleBookmark}
+                clearBookmarks={() => setBookmarks([])}
                 onNavigateCalc={(dep, arr, fareId) => {
                   navigationRef.current?.navigate('PP計算');
                 }}

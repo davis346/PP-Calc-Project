@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { C } from '../utils/colors';
 import { BookmarkItem } from '../utils/types';
 
@@ -7,15 +7,38 @@ interface Props {
   bookmarks: BookmarkItem[];
   toggleBookmark: (item: BookmarkItem) => void;
   onNavigateCalc: (dep: string, arr: string, fareId: string) => void;
+  clearBookmarks: () => void;
 }
 
-export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc }: Props) {
+export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc, clearBookmarks }: Props) {
+  const handleClearAll = () => {
+    Alert.alert(
+      'お気に入りを全削除',
+      `${bookmarks.length}件のお気に入りをすべて削除しますか？`,
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '全削除',
+          style: 'destructive',
+          onPress: clearBookmarks,
+        },
+      ]
+    );
+  };
+
   return (
     <ScrollView style={s.container}>
       <View style={s.card}>
         <View style={s.header}>
           <Text style={s.headerTitle}>★ お気に入り路線</Text>
-          <Text style={s.headerCount}>{bookmarks.length}件</Text>
+          <View style={s.headerRight}>
+            <Text style={s.headerCount}>{bookmarks.length}件</Text>
+            {bookmarks.length > 0 && (
+              <TouchableOpacity onPress={handleClearAll} style={s.clearBtn}>
+                <Text style={s.clearBtnText}>全削除</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {bookmarks.length === 0 ? (
@@ -57,7 +80,10 @@ const s = StyleSheet.create({
   card: { backgroundColor: C.card, borderRadius: 14, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: C.bdr },
   headerTitle: { fontSize: 13, fontWeight: '700', color: C.text },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerCount: { fontSize: 11, color: C.sub },
+  clearBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: C.danger },
+  clearBtnText: { fontSize: 11, fontWeight: '600', color: C.danger },
   empty: { padding: 40, alignItems: 'center' },
   emptyIcon: { fontSize: 32, color: C.sub, marginBottom: 8 },
   emptyText: { fontSize: 13, color: C.sub, textAlign: 'center', lineHeight: 20 },
