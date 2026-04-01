@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, StatusBar, Platform, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Platform, TouchableOpacity, Modal, KeyboardAvoidingView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -96,7 +96,7 @@ const ti = StyleSheet.create({
     justifyContent: 'center',
   },
   wrapActive: {
-    backgroundColor: C.pri, // same as header (#1E3A5F)
+    backgroundColor: C.pri,
   },
 });
 
@@ -138,7 +138,11 @@ function AppContent() {
   const prog = Math.min((totalPP / 50000) * 100, 100);
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.bg }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: C.bg }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
       <StatusBar barStyle="light-content" backgroundColor={C.priDk} />
       <HeaderBar totalPP={totalPP} prog={prog} onProPress={() => setShowProModal(true)} isPro={isPro} />
       <NavigationContainer ref={navigationRef}>
@@ -227,7 +231,7 @@ function AppContent() {
           isPro={isPro}
         />
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
