@@ -107,6 +107,9 @@ function AppContent() {
   const navigationRef = useRef<any>(null);
   const { isPro, setIsPro } = usePro();
 
+  // Track whether initial load from AsyncStorage is complete
+  const loadedRef = useRef({ history: false, bookmarks: false });
+
   useEffect(() => {
     (async () => {
       try {
@@ -115,11 +118,20 @@ function AppContent() {
         if (hData) setHistory(JSON.parse(hData));
         if (bData) setBookmarks(JSON.parse(bData));
       } catch {}
+      loadedRef.current = { history: true, bookmarks: true };
     })();
   }, []);
 
-  useEffect(() => { AsyncStorage.setItem('history', JSON.stringify(history)).catch(() => {}); }, [history]);
-  useEffect(() => { AsyncStorage.setItem('bookmarks', JSON.stringify(bookmarks)).catch(() => {}); }, [bookmarks]);
+  // Only save after initial load is complete, to avoid overwriting with empty []
+  useEffect(() => {
+    if (!loadedRef.current.history) return;
+    AsyncStorage.setItem('history', JSON.stringify(history)).catch(() => {});
+  }, [history]);
+
+  useEffect(() => {
+    if (!loadedRef.current.bookmarks) return;
+    AsyncStorage.setItem('bookmarks', JSON.stringify(bookmarks)).catch(() => {});
+  }, [bookmarks]);
 
   const toggleBookmark = useCallback((item: BookmarkItem) => {
     setBookmarks(prev => {
