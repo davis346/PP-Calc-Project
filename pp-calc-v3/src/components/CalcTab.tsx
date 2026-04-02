@@ -42,7 +42,7 @@ function buildFareOptions(fares: Fare[], domestic: boolean, fareMode: string) {
       data.push({ key: f.id, label: `${f.name}（${Math.round(f.rate * 100)}% / +${f.boarding}PP）` }));
     data.push({ key: 'sec-eco', section: true, label: '── 普通席 ──' });
     fares.filter(f => f.cls === "economy").forEach(f =>
-      data.push({ key: f.id, label: `${f.name}（${Math.round(f.rate * 100)}% / +${f.boarding}PP）` }));
+      data.push({ key: f.id, label: `${f.name}（${Math.round(f.rate * 100)}%）` }));
   } else {
     fares.forEach(f =>
       data.push({ key: f.id, label: `${f.name}（${Math.round(f.rate * 100)}%）` }));
@@ -51,8 +51,8 @@ function buildFareOptions(fares: Fare[], domestic: boolean, fareMode: string) {
 }
 
 const airportOptions = buildAirportOptions();
-
 const INPUT_ACCESSORY_ID = 'priceInput';
+const MAX_PRICE = 1_000_000;
 
 function AdBanner() {
   return (
@@ -68,6 +68,7 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
   const [fareMode, setFareMode] = useState<"old" | "new">("new");
   const [fareId, setFareId] = useState("new-e-std");
   const [price, setPrice] = useState("");
+  const [priceError, setPriceError] = useState<string | null>(null);
   const [isRound, setIsRound] = useState(true);
   const [result, setResult] = useState<CalcResult | null>(null);
 
@@ -83,7 +84,28 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
 
   const swap = () => { const t = dep; setDep(arr); setArr(t); setResult(null); };
 
+  const handlePriceChange = (t: string) => {
+    setPrice(t);
+    setResult(null);
+
+    if (t === '') {
+      setPriceError(null);
+      return;
+    }
+    if (/[^0-9]/.test(t)) {
+      setPriceError("数字のみ入力できます（記号・文字は使用不可）");
+      return;
+    }
+    const num = parseInt(t, 10);
+    if (num > MAX_PRICE) {
+      setPriceError(`金額が大きすぎます（上限は${MAX_PRICE.toLocaleString()}円）`);
+      return;
+    }
+    setPriceError(null);
+  };
+
   const doCalc = useCallback(() => {
+    if (priceError) return;
     const bm = getBaseMileage(dep, arr);
     if (!bm) { Alert.alert("エラー", "この路線のデータがありません"); return; }
     const fare = fares.find(f => f.id === fareId);
@@ -91,10 +113,11 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
     const mult = getRouteMultiplier(dep, arr);
     const { flightMile, pp } = calcPP(bm, fare.rate, mult, fare.boarding);
     const totalPP = isRound ? pp * 2 : pp;
-    const numPrice = Number(price.replace(/[^0-9]/g, ""));
-    const ppUnit = numPrice > 0 ? Math.round((numPrice / totalPP) * 100) / 100 : null;    const trips = Math.ceil(50000 / (pp * 2));
+    const numPrice = price === '' ? 0 : parseInt(price, 10);
+    const ppUnit = numPrice > 0 ? Math.round((numPrice / totalPP) * 100) / 100 : null;
+    const trips = Math.ceil(50000 / (pp * 2));
     setResult({ bm, fare, mult, flightMile, pp, totalPP, ppUnit, trips, isRound });
-  }, [dep, arr, fareId, price, isRound, fares]);
+  }, [dep, arr, fareId, price, priceError, isRound, fares]);
 
   const addHistory = () => {
     if (!result) return;
@@ -215,22 +238,24 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
           </View>
 
           <Text style={[s.label, { marginTop: 14 }]}>💰 航空券価格（{isRound ? "往復" : "片道"}合計・任意）</Text>
-          <View style={s.inputWrap}>
+          <View style={[s.inputWrap, priceError ? s.inputWrapError : null]}>
             <TextInput
               style={s.input}
               value={price}
-              onChangeText={t => { setPrice(t); setResult(null); }}
+              onChangeText={handlePriceChange}
               placeholder="例: 25300"
               keyboardType="numeric"
               placeholderTextColor="#A0AAB4"
+              maxLength={7}
               returnKeyType="done"
               onSubmitEditing={() => Keyboard.dismiss()}
               inputAccessoryViewID={Platform.OS === 'ios' ? INPUT_ACCESSORY_ID : undefined}
             />
             <Text style={s.inputSuffix}>円</Text>
           </View>
+          {priceError && <Text style={s.priceError}>{priceError}</Text>}
 
-          <TouchableOpacity onPress={doCalc} style={s.calcBtn} activeOpacity={0.8}>
+          <TouchableOpacity onPress={doCalc} style={[s.calcBtn, priceError ? s.calcBtnDisabled : null]} activeOpacity={0.8}>
             <Text style={s.calcBtnText}>PP を計算する</Text>
           </TouchableOpacity>
         </View>
@@ -328,10 +353,13 @@ const s = StyleSheet.create({
   helpBox: { backgroundColor: `${C.pri}10`, borderWidth: 1, borderColor: `${C.pri}30`, borderRadius: 8, padding: 10, marginBottom: 4, marginTop: 4 },
   helpTitle: { fontSize: 10, fontWeight: '700', color: C.pri, marginBottom: 3 },
   helpText: { fontSize: 11, color: C.sub, lineHeight: 18 },
-  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: C.bdr, borderRadius: 10, backgroundColor: C.white, marginBottom: 14 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: C.bdr, borderRadius: 10, backgroundColor: C.white, marginBottom: 4 },
+  inputWrapError: { borderColor: C.danger },
   input: { flex: 1, padding: 12, fontSize: 15, color: C.text },
   inputSuffix: { paddingRight: 14, color: C.sub, fontSize: 14 },
-  calcBtn: { backgroundColor: C.pri, borderRadius: 12, paddingVertical: 15, alignItems: 'center', shadowColor: C.pri, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 },
+  priceError: { fontSize: 11, color: C.danger, marginBottom: 10, marginLeft: 4 },
+  calcBtn: { backgroundColor: C.pri, borderRadius: 12, paddingVertical: 15, alignItems: 'center', shadowColor: C.pri, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3, marginTop: 10 },
+  calcBtnDisabled: { backgroundColor: C.sub, shadowOpacity: 0 },
   calcBtnText: { color: C.white, fontSize: 16, fontWeight: '700', letterSpacing: 1 },
   resultCard: { borderRadius: 16, overflow: 'hidden', marginBottom: 14, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
   resultHeader: { backgroundColor: C.priDk, padding: 20, alignItems: 'center' },
