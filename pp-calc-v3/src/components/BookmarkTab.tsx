@@ -27,7 +27,7 @@ export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc,
   };
 
   return (
-    <ScrollView style={s.container}>
+    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 100 }}>
       <View style={s.card}>
         <View style={s.header}>
           <Text style={s.headerTitle}>★ お気に入り路線</Text>

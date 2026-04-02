@@ -29,7 +29,7 @@ export default function DashTab({ history, setHistory }: Props) {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 30 }}>
+    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 100 }}>
       {/* Progress Card */}
       <View style={s.card}>
         <Text style={s.progressLabel}>SFC達成度</Text>

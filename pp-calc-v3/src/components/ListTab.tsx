@@ -102,7 +102,7 @@ export default function ListTab({ bookmarks, toggleBookmark, isBookmarked }: Pro
           </TouchableOpacity>
           <View style={{ width: 30 }} />
         </View>
-        <ScrollView style={{ maxHeight: 500 }}>
+        <ScrollView style={{ maxHeight: 500 }} contentContainerStyle={{ paddingBottom: 100 }}>
           {sorted.slice(0, 60).map((r, i) => (
             <View key={i} style={[s.row, { backgroundColor: i % 2 === 0 ? C.white : C.bg }]}>
               <Text style={[s.cell, { flex: 1, fontWeight: '500', color: C.text }]}>{r.route}</Text>
