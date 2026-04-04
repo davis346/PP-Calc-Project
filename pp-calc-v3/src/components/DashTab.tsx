@@ -59,7 +59,7 @@ export default function DashTab({ history, setHistory }: Props) {
             {history.length > 0 && (
               <>
                 <TouchableOpacity onPress={() => exportHistoryCSV(history)} style={[s.exportBtn, { borderColor: C.pri }]}>
-                  <Text style={[s.exportBtnText, { color: C.pri }]}>CSV</Text>
+                  <Text style={[s.exportBtnText, { color: C.pri }]}>CSVで出力</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setHistory([])} style={[s.clearBtn, { borderColor: C.danger }]}>
                   <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>

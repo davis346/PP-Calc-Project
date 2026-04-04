@@ -1,4 +1,6 @@
-import { Share, Alert } from 'react-native';
+import { Alert } from 'react-native';
+import { File, Paths } from 'expo-file-system/next';
+import * as Sharing from 'expo-sharing';
 import { HistoryItem, BookmarkItem } from './types';
 
 function escapeCell(value: string | number | null): string {
@@ -16,6 +18,24 @@ function buildCSV(headers: string[], rows: (string | number | null)[][]): string
   return [headerRow, ...dataRows].join('\n');
 }
 
+async function shareCSV(csv: string, filename: string): Promise<void> {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  const ts = `${yyyy}-${mm}-${dd}_${hh}-${min}`;
+  const stampedName = filename.replace('.csv', `_${ts}.csv`);
+  const file = new File(Paths.cache, stampedName);
+  await file.write(csv);
+  await Sharing.shareAsync(file.uri, {
+    mimeType: 'text/csv',
+    dialogTitle: stampedName,
+    UTI: 'public.comma-separated-values-text',
+  });
+}
+
 export async function exportHistoryCSV(history: HistoryItem[]): Promise<void> {
   if (history.length === 0) {
     Alert.alert('エクスポート', '搭乗履歴がありません');
@@ -30,7 +50,7 @@ export async function exportHistoryCSV(history: HistoryItem[]): Promise<void> {
     h.ppUnit > 0 ? h.ppUnit : null,
   ]);
   try {
-    await Share.share({ message: buildCSV(headers, rows), title: '搭乗履歴.csv' });
+    await shareCSV(buildCSV(headers, rows), '搭乗履歴.csv');
   } catch {
     Alert.alert('エラー', 'エクスポートに失敗しました');
   }
@@ -46,7 +66,7 @@ export async function exportBookmarksCSV(bookmarks: BookmarkItem[]): Promise<voi
     b.route, b.dep, b.arr, b.fare, b.pp, b.ppRound, b.trips, b.ppUnit ?? null,
   ]);
   try {
-    await Share.share({ message: buildCSV(headers, rows), title: 'お気に入り路線.csv' });
+    await shareCSV(buildCSV(headers, rows), 'お気に入り路線.csv');
   } catch {
     Alert.alert('エラー', 'エクスポートに失敗しました');
   }
@@ -75,7 +95,7 @@ export async function exportAllCSV(history: HistoryItem[], bookmarks: BookmarkIt
     buildCSV(bookmarkHeaders, bookmarkRows),
   ].join('\n');
   try {
-    await Share.share({ message: csv, title: 'PPデータ.csv' });
+    await shareCSV(csv, 'PPデータ.csv');
   } catch {
     Alert.alert('エラー', 'エクスポートに失敗しました');
   }
