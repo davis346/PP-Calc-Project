@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getProducts, purchasePro, restorePurchases, setPurchaseListener, initIAP, disconnectIAP } from '../utils/iapManager';
 import { useSettings } from '../utils/SettingsContext';
 
@@ -29,6 +30,7 @@ const comparison = [
 
 export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props) {
   const { C } = useSettings();
+  const insets = useSafeAreaInsets();
   const [price, setPrice] = useState("¥100");
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -88,7 +90,7 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
     <View style={{ flex: 1, backgroundColor: C.sky }}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 50 }}>
         {/* Close */}
-        <TouchableOpacity onPress={onClose} style={[s.closeBtn, { backgroundColor: C.white }]}>
+        <TouchableOpacity onPress={onClose} style={[s.closeBtn, { backgroundColor: C.white, top: insets.top + 16 }]}>
           <Text style={[s.closeText, { color: C.text }]}>✕</Text>
         </TouchableOpacity>
 

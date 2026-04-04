@@ -11,9 +11,23 @@ interface Props {
   isBookmarked: (dep: string, arr: string, fareId: string) => boolean;
 }
 
+type SortKey = 'route' | 'fare' | 'ppRound' | 'trips';
+type SortDir = 'asc' | 'desc';
+
 export default function ListTab({ bookmarks, toggleBookmark, isBookmarked }: Props) {
   const { C } = useSettings();
   const [filter, setFilter] = useState<"all" | "domestic" | "intl">("all");
+  const [sortKey, setSortKey] = useState<SortKey>('ppRound');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'route' || key === 'fare' ? 'asc' : 'desc');
+    }
+  };
 
   const ranking = useMemo(() => {
     const res: any[] = [];
@@ -40,10 +54,26 @@ export default function ListTab({ bookmarks, toggleBookmark, isBookmarked }: Pro
         });
       });
     });
-    return res.sort((a, b) => b.ppRound - a.ppRound);
+    return res;
   }, []);
 
-  const filtered = filter === "all" ? ranking : filter === "domestic" ? ranking.filter(r => r.domestic) : ranking.filter(r => !r.domestic);
+  const sorted = useMemo(() => {
+    const base = filter === "all" ? ranking : filter === "domestic" ? ranking.filter(r => r.domestic) : ranking.filter(r => !r.domestic);
+    return [...base].sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === 'route' || sortKey === 'fare') {
+        cmp = a[sortKey].localeCompare(b[sortKey], 'ja');
+      } else {
+        cmp = a[sortKey] - b[sortKey];
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [ranking, filter, sortKey, sortDir]);
+
+  const arrow = (key: SortKey) => {
+    if (sortKey !== key) return ' ↕';
+    return sortDir === 'asc' ? ' ↑' : ' ↓';
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg, padding: 14 }}>
@@ -55,18 +85,26 @@ export default function ListTab({ bookmarks, toggleBookmark, isBookmarked }: Pro
           </TouchableOpacity>
         ))}
       </View>
-      <Text style={[s.note, { color: C.sub }]}>※新運賃（2026/5/19〜）で計算</Text>
+      <Text style={[s.note, { color: C.sub }]}>※新運賃（2026/5/19〜）で計算　タップでソート</Text>
 
       <View style={[s.card, { backgroundColor: C.card }]}>
         <View style={[s.headerRow, { backgroundColor: C.pri }]}>
-          <Text style={[s.headerCell, { flex: 1, color: C.accLt }]}>路線</Text>
-          <Text style={[s.headerCell, { width: 72, color: C.accLt }]}>運賃</Text>
-          <Text style={[s.headerCell, { width: 65, color: C.accLt }]}>往復PP</Text>
-          <Text style={[s.headerCell, { width: 46, color: C.accLt }]}>回数</Text>
-          <Text style={[s.headerCell, { width: 30, color: C.accLt }]}></Text>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => handleSort('route')}>
+            <Text style={[s.headerCell, { color: C.accLt }]}>路線{arrow('route')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ width: 72 }} onPress={() => handleSort('fare')}>
+            <Text style={[s.headerCell, { color: C.accLt }]}>運賃{arrow('fare')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ width: 65 }} onPress={() => handleSort('ppRound')}>
+            <Text style={[s.headerCell, { color: C.accLt }]}>往復PP{arrow('ppRound')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ width: 46 }} onPress={() => handleSort('trips')}>
+            <Text style={[s.headerCell, { color: C.accLt }]}>回数{arrow('trips')}</Text>
+          </TouchableOpacity>
+          <View style={{ width: 30 }} />
         </View>
         <ScrollView style={{ maxHeight: 500 }}>
-          {filtered.slice(0, 60).map((r, i) => (
+          {sorted.slice(0, 60).map((r, i) => (
             <View key={i} style={[s.row, { backgroundColor: i % 2 === 0 ? C.white : C.bg, borderBottomColor: C.bdr }]}>
               <Text style={[s.cell, { flex: 1, fontWeight: '500', color: C.text }]}>{r.route}</Text>
               <Text style={[s.cell, { width: 72, fontSize: 9, color: C.sub }]}>{r.fareShort}</Text>
