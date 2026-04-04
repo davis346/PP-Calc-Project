@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, StatusBar, Platform, TouchableOpacity, Modal, KeyboardAvoidingView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { C } from './src/utils/colors';
 import { HistoryItem, BookmarkItem } from './src/utils/types';
@@ -80,6 +81,7 @@ function AppContent() {
   const navigationRef = useRef<any>(null);
   const { isPro, setIsPro } = usePro();
   const { settings, C } = useSettings();
+  const insets = useSafeAreaInsets();
 
   const loadedRef = useRef({ history: false, bookmarks: false });
 
@@ -144,10 +146,11 @@ function AppContent() {
             tabBarStyle: {
               backgroundColor: C.white,
               borderTopColor: C.bdr,
-              paddingBottom: Platform.OS === 'ios' ? 28 : 6,
+              paddingBottom: Platform.OS === 'ios' ? 28 : insets.bottom,
               paddingTop: 6,
-              height: Platform.OS === 'ios' ? 88 : 60,
+              height: Platform.OS === 'ios' ? 88 : 60 + insets.bottom,
             },
+            tabBarHideOnKeyboard: true,
             tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
           }}
           screenListeners={{
@@ -236,10 +239,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <SettingsProvider>
-      <ProProvider>
-        <AppContent />
-      </ProProvider>
-    </SettingsProvider>
+    <SafeAreaProvider>
+      <SettingsProvider>
+        <ProProvider>
+          <AppContent />
+        </ProProvider>
+      </SettingsProvider>
+    </SafeAreaProvider>
   );
 }

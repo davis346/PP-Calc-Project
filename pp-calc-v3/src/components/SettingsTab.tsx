@@ -113,7 +113,7 @@ export default function SettingsTab({ history, bookmarks, onShowPro }: { history
                 <Text style={s.rowIcon}>💳</Text>
                 <View>
                   <Text style={[s.rowLabel, { color: C.text }]}>デフォルト運賃</Text>
-                  <Text style={[s.rowSub, { color: C.sub }]}>PP計算の運賃デフォルト（国内新運賃）</Text>
+                  <Text style={[s.rowSub, { color: C.sub }]}>PP計算の運賃デフォルト</Text>
                 </View>
               </View>
               <View style={[s.badge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
