@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
 import { getProducts, purchasePro, restorePurchases, setPurchaseListener, initIAP, disconnectIAP } from '../utils/iapManager';
 import { useSettings } from '../utils/SettingsContext';
 
@@ -32,6 +32,7 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
   const [price, setPrice] = useState("¥100");
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -40,11 +41,11 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
       if (products.length > 0) setPrice(products[0].price || "¥100");
     })();
 
+    // Listener for native IAP (real device / App Store)
     setPurchaseListener((success) => {
       setLoading(false);
       if (success) {
-        Alert.alert("購入完了", "Proにアップグレードしました！");
-        onPurchased();
+        setShowThankYou(true);
       }
     });
 
@@ -54,7 +55,15 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
   const handlePurchase = async () => {
     setLoading(true);
     const result = await purchasePro();
-    if (!result) setLoading(false);
+    // In Expo Go / dev, purchasePro() returns true immediately (mock).
+    // On a real device, the listener handles the result instead.
+    if (result) {
+      setLoading(false);
+      setShowThankYou(true);
+    } else {
+      // Purchase was cancelled or failed — stop loading
+      setLoading(false);
+    }
   };
 
   const handleRestore = async () => {
@@ -62,11 +71,14 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
     const restored = await restorePurchases();
     setRestoring(false);
     if (restored) {
-      Alert.alert("復元完了", "Proが復元されました！");
-      onPurchased();
-    } else {
-      Alert.alert("復元結果", "購入履歴が見つかりませんでした");
+      setShowThankYou(true);
     }
+  };
+
+  const handleThankYouClose = () => {
+    setShowThankYou(false);
+    // Wait for the thank you modal to fully dismiss before closing the parent modal
+    setTimeout(() => onPurchased(), 300);
   };
 
   return (
@@ -146,6 +158,27 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
           ))}
         </View>
       </ScrollView>
+
+      {/* Thank You Modal */}
+      <Modal visible={showThankYou} transparent animationType="fade">
+        <View style={s.thankYouOverlay}>
+          <View style={[s.thankYouCard, { backgroundColor: C.white }]}>
+            <Text style={s.thankYouEmoji}>🎉</Text>
+            <Text style={[s.thankYouTitle, { color: C.pri }]}>ありがとうございます！</Text>
+            <Text style={[s.thankYouMsg, { color: C.sub }]}>
+              Proへのアップグレードありがとうございます。{'\n'}
+              引き続きSFC修行を全力でサポートします！
+            </Text>
+            <TouchableOpacity
+              onPress={handleThankYouClose}
+              style={[s.thankYouBtn, { backgroundColor: C.pri }]}
+              activeOpacity={0.8}
+            >
+              <Text style={[s.thankYouBtnText, { color: C.white }]}>はじめる 👑</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -177,4 +210,12 @@ const s = StyleSheet.create({
   tableHeaderCell: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
   tableRow: { flexDirection: 'row', paddingVertical: 11, paddingHorizontal: 12, borderTopWidth: 1 },
   tableCell: { fontSize: 13, textAlign: 'center' },
+  // Thank You Modal
+  thankYouOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 32 },
+  thankYouCard: { borderRadius: 24, padding: 32, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 20, elevation: 8, width: '100%' },
+  thankYouEmoji: { fontSize: 56, marginBottom: 12 },
+  thankYouTitle: { fontSize: 22, fontWeight: '800', marginBottom: 12 },
+  thankYouMsg: { fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
+  thankYouBtn: { borderRadius: 14, paddingVertical: 16, paddingHorizontal: 40 },
+  thankYouBtnText: { fontSize: 16, fontWeight: '700' },
 });
