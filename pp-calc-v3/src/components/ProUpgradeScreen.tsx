@@ -38,7 +38,7 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
     (async () => {
       await initIAP();
       const products = await getProducts();
-      if (products.length > 0) setPrice(products[0].price || "¥100");
+      if (products.length > 0) setPrice(products[0].displayPrice || "¥100");
     })();
 
     // Listener for native IAP (real device / App Store)
