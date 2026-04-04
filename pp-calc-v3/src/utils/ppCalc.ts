@@ -38,3 +38,14 @@ export function getInternationalRegions(): string[] {
 export function getAirportsByRegion(region: string) {
   return AIRPORTS.filter(a => a.region === region);
 }
+
+export function buildAirportSelectorOptions() {
+  const data: any[] = [];
+  data.push({ key: 'sec-dom', section: true, label: '── 国内 ──' });
+  getDomesticAirports().forEach(a => data.push({ key: a.code, label: `${a.name}（${a.code}）` }));
+  getInternationalRegions().forEach(r => {
+    data.push({ key: `sec-${r}`, section: true, label: `── ${r} ──` });
+    getAirportsByRegion(r).forEach(a => data.push({ key: a.code, label: `${a.name}（${a.code}）` }));
+  });
+  return data;
+}

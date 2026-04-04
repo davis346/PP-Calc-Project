@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
 import ModalSelector from 'react-native-modal-selector';
 import { AIRPORTS, OLD_DOMESTIC_FARES, NEW_DOMESTIC_FARES, INTL_FARES, FARE_HELP, Fare } from '../data/masterData';
-import { getBaseMileage, isDomestic, getRouteMultiplier, calcPP, getAirportName, getDomesticAirports, getInternationalRegions, getAirportsByRegion } from '../utils/ppCalc';
+import { getBaseMileage, isDomestic, getRouteMultiplier, calcPP, getAirportName, buildAirportSelectorOptions } from '../utils/ppCalc';
 import { CalcResult, BookmarkItem, HistoryItem } from '../utils/types';
 import { useSettings } from '../utils/SettingsContext';
 
@@ -13,19 +13,6 @@ interface Props {
   toggleBookmark: (item: BookmarkItem) => void;
   isBookmarked: (dep: string, arr: string, fareId: string) => boolean;
   onShowPro: () => void;
-}
-
-function buildAirportOptions() {
-  const data: any[] = [];
-  const domAirports = getDomesticAirports();
-  const intlRegions = getInternationalRegions();
-  data.push({ key: 'sec-dom', section: true, label: '── 国内 ──' });
-  domAirports.forEach(a => data.push({ key: a.code, label: `${a.name}（${a.code}）` }));
-  intlRegions.forEach(r => {
-    data.push({ key: `sec-${r}`, section: true, label: `── ${r} ──` });
-    getAirportsByRegion(r).forEach(a => data.push({ key: a.code, label: `${a.name}（${a.code}）` }));
-  });
-  return data;
 }
 
 function buildFareOptions(fares: Fare[], domestic: boolean, fareMode: string) {
@@ -51,7 +38,7 @@ function buildFareOptions(fares: Fare[], domestic: boolean, fareMode: string) {
   return data;
 }
 
-const airportOptions = buildAirportOptions();
+const airportOptions = buildAirportSelectorOptions();
 
 export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark, isBookmarked, onShowPro }: Props) {
   const { C, settings } = useSettings();
@@ -73,7 +60,23 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
     setResult(null);
   };
   const [fareMode, setFareMode] = useState<"old" | "new">("new");
-  const [fareId, setFareId] = useState("new-e-std");
+  const [fareId, setFareId] = useState(settings.defaultFare || "new-e-std");
+  const userChangedFare = React.useRef(false);
+
+  // Sync fareId with defaultFare setting on load or change,
+  // unless the user has manually picked a fare this session.
+  useEffect(() => {
+    if (!userChangedFare.current) {
+      setFareId(settings.defaultFare || "new-e-std");
+    }
+  }, [settings.defaultFare]);
+
+  const handleSetFareId = (id: string) => {
+    userChangedFare.current = true;
+    setFareId(id);
+    setResult(null);
+  };
+
   const [price, setPrice] = useState("");
   const [isRound, setIsRound] = useState(true);
   const [result, setResult] = useState<CalcResult | null>(null);
@@ -83,7 +86,9 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
   const fareOptions = buildFareOptions(fares, domestic, fareMode);
 
   useEffect(() => {
-    if (domestic) setFareId(fareMode === "old" ? "old-6" : "new-e-std");
+    // When route type or fare mode changes, reset to default fare unless user overrode it
+    userChangedFare.current = false;
+    if (domestic) setFareId(fareMode === "old" ? "old-6" : (settings.defaultFare || "new-e-std"));
     else setFareId("Y/B/M");
     setResult(null);
   }, [domestic, fareMode]);
@@ -190,7 +195,7 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
         <Text style={[s.label, { color: C.sub }]}>{domestic ? "💳 運賃種別" : "💳 予約クラス"}</Text>
         <ModalSelector
           data={fareOptions}
-          onChange={(o) => { setFareId(o.key); setResult(null); }}
+          onChange={(o) => handleSetFareId(o.key)}
           style={{ borderWidth: 0 }}
           selectStyle={{ borderWidth: 0, padding: 0 }}
           selectTextStyle={{ display: 'none' }}

@@ -2,32 +2,46 @@ import React from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import ModalSelector from 'react-native-modal-selector';
 import { useSettings } from '../utils/SettingsContext';
-import { getDomesticAirports, getInternationalRegions, getAirportsByRegion } from '../utils/ppCalc';
-import { AIRPORTS } from '../data/masterData';
+import { buildAirportSelectorOptions } from '../utils/ppCalc';
+import { AIRPORTS, NEW_DOMESTIC_FARES } from '../data/masterData';
 
-function buildAirportOptions() {
+const airportOptions = buildAirportSelectorOptions();
+
+const fareOptions = (() => {
   const data: any[] = [];
-  const domAirports = getDomesticAirports();
-  const intlRegions = getInternationalRegions();
-  data.push({ key: 'sec-dom', section: true, label: '── 国内 ──' });
-  domAirports.forEach(a => data.push({ key: a.code, label: `${a.name}（${a.code}）` }));
-  intlRegions.forEach(r => {
-    data.push({ key: `sec-${r}`, section: true, label: `── ${r} ──` });
-    getAirportsByRegion(r).forEach(a => data.push({ key: a.code, label: `${a.name}（${a.code}）` }));
-  });
+  data.push({ key: 'sec-first', section: true, label: '── ファーストクラス ──' });
+  NEW_DOMESTIC_FARES.filter(f => f.cls === 'first').forEach(f =>
+    data.push({ key: f.id, label: `${f.name}（${Math.round(f.rate * 100)}% / +${f.boarding}PP）` })
+  );
+  data.push({ key: 'sec-eco', section: true, label: '── エコノミークラス ──' });
+  NEW_DOMESTIC_FARES.filter(f => f.cls === 'economy').forEach(f =>
+    data.push({ key: f.id, label: `${f.name}（${Math.round(f.rate * 100)}% / +${f.boarding}PP）` })
+  );
   return data;
-}
-
-const airportOptions = buildAirportOptions();
+})();
 
 export default function SettingsTab() {
   const { settings, updateSettings, C } = useSettings();
+
   const homeAP = AIRPORTS.find(a => a.code === settings.homeAirport);
+  const defaultFareObj = NEW_DOMESTIC_FARES.find(f => f.id === settings.defaultFare);
+
+  const pickerProps = {
+    style: { borderWidth: 0 },
+    selectStyle: { borderWidth: 0, padding: 0 },
+    selectTextStyle: { display: 'none' as const },
+    sectionTextStyle: { fontSize: 13, fontWeight: '700' as const, color: C.pri, paddingVertical: 8, paddingLeft: 16, textAlign: 'left' as const },
+    optionTextStyle: { fontSize: 15, color: C.text, textAlign: 'left' as const, paddingLeft: 16 },
+    cancelText: 'キャンセル',
+    overlayStyle: { backgroundColor: 'rgba(0,0,0,0.5)' },
+    optionContainerStyle: { borderRadius: 16, backgroundColor: C.white, maxHeight: '70%' as any },
+  };
 
   return (
     <View style={[s.container, { backgroundColor: C.bg }]}>
       <Text style={[s.sectionTitle, { color: C.sub }]}>表示設定</Text>
       <View style={[s.card, { backgroundColor: C.card }]}>
+
         {/* Dark mode */}
         <View style={[s.row, { borderBottomColor: C.bdr }]}>
           <View style={s.rowLeft}>
@@ -47,18 +61,11 @@ export default function SettingsTab() {
 
         {/* Home airport */}
         <ModalSelector
+          {...pickerProps}
           data={airportOptions}
           onChange={(o) => updateSettings({ homeAirport: o.key })}
-          style={{ borderWidth: 0 }}
-          selectStyle={{ borderWidth: 0, padding: 0 }}
-          selectTextStyle={{ display: 'none' }}
-          sectionTextStyle={{ fontSize: 13, fontWeight: '700', color: C.pri, paddingVertical: 8, paddingLeft: 16, textAlign: 'left' }}
-          optionTextStyle={{ fontSize: 15, color: C.text, textAlign: 'left', paddingLeft: 16 }}
-          cancelText="キャンセル"
-          overlayStyle={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-          optionContainerStyle={{ borderRadius: 16, backgroundColor: C.white, maxHeight: '70%' }}
         >
-          <View style={[s.row, { borderBottomWidth: 0 }]}>
+          <View style={[s.row, { borderBottomColor: C.bdr }]}>
             <View style={s.rowLeft}>
               <Text style={s.rowIcon}>🏠</Text>
               <View>
@@ -66,14 +73,40 @@ export default function SettingsTab() {
                 <Text style={[s.rowSub, { color: C.sub }]}>PP計算の出発地デフォルト</Text>
               </View>
             </View>
-            <View style={[s.airportBadge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
-              <Text style={[s.airportBadgeText, { color: C.pri }]}>
+            <View style={[s.badge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
+              <Text style={[s.badgeText, { color: C.pri }]}>
                 {homeAP ? `${homeAP.name}（${homeAP.code}）` : settings.homeAirport}
               </Text>
-              <Text style={[s.airportChevron, { color: C.sub }]}>›</Text>
+              <Text style={[s.chevron, { color: C.sub }]}>›</Text>
             </View>
           </View>
         </ModalSelector>
+
+        {/* Default fare */}
+        <ModalSelector
+          {...pickerProps}
+          data={fareOptions}
+          onChange={(o) => updateSettings({ defaultFare: o.key })}
+        >
+          <View style={[s.row, { borderBottomWidth: 0 }]}>
+            <View style={s.rowLeft}>
+              <Text style={s.rowIcon}>💳</Text>
+              <View>
+                <Text style={[s.rowLabel, { color: C.text }]}>デフォルト運賃</Text>
+                <Text style={[s.rowSub, { color: C.sub }]}>PP計算の運賃デフォルト（国内新運賃）</Text>
+              </View>
+            </View>
+            <View style={[s.badge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
+              <Text style={[s.badgeText, { color: C.pri }]}>
+                {defaultFareObj
+                  ? `${defaultFareObj.cls === 'first' ? 'ファースト' : 'エコノミー'} ${defaultFareObj.name.replace('エコノミー ', '').replace('ファースト ', '')}`
+                  : settings.defaultFare}
+              </Text>
+              <Text style={[s.chevron, { color: C.sub }]}>›</Text>
+            </View>
+          </View>
+        </ModalSelector>
+
       </View>
     </View>
   );
@@ -88,7 +121,7 @@ const s = StyleSheet.create({
   rowIcon: { fontSize: 20 },
   rowLabel: { fontSize: 14, fontWeight: '600' },
   rowSub: { fontSize: 11, marginTop: 2 },
-  airportBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  airportBadgeText: { fontSize: 13, fontWeight: '600' },
-  airportChevron: { fontSize: 18, fontWeight: '300' },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  badgeText: { fontSize: 12, fontWeight: '600' },
+  chevron: { fontSize: 18, fontWeight: '300' },
 });

@@ -7,11 +7,13 @@ const SETTINGS_KEY = '@ppcalc_settings';
 interface Settings {
   darkMode: boolean;
   homeAirport: string;
+  defaultFare: string;
 }
 
 const defaultSettings: Settings = {
   darkMode: false,
   homeAirport: 'HND',
+  defaultFare: 'new-e-std',
 };
 
 interface SettingsContextType {
