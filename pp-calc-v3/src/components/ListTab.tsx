@@ -87,7 +87,7 @@ export default function ListTab({ bookmarks, toggleBookmark, isBookmarked }: Pro
       </View>
       <Text style={[s.note, { color: C.sub }]}>※新運賃（2026/5/19〜）で計算　タップでソート</Text>
 
-      <View style={[s.card, { backgroundColor: C.card }]}>
+      <View style={[s.card, { backgroundColor: C.card, flex: 1 }]}>
         <View style={[s.headerRow, { backgroundColor: C.pri }]}>
           <TouchableOpacity style={{ flex: 1 }} onPress={() => handleSort('route')}>
             <Text style={[s.headerCell, { color: C.accLt }]}>路線{arrow('route')}</Text>
@@ -103,7 +103,7 @@ export default function ListTab({ bookmarks, toggleBookmark, isBookmarked }: Pro
           </TouchableOpacity>
           <View style={{ width: 30 }} />
         </View>
-        <ScrollView style={{ maxHeight: 500 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
           {sorted.slice(0, 60).map((r, i) => (
             <View key={i} style={[s.row, { backgroundColor: i % 2 === 0 ? C.white : C.bg, borderBottomColor: C.bdr }]}>
               <Text style={[s.cell, { flex: 1, fontWeight: '500', color: C.text }]}>{r.route}</Text>
