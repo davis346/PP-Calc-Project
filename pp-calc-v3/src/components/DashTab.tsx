@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { HistoryItem } from '../utils/types';
 import { useSettings } from '../utils/SettingsContext';
+import { exportHistoryCSV } from '../utils/csvExport';
 
 interface Props {
   history: HistoryItem[];
@@ -56,9 +57,14 @@ export default function DashTab({ history, setHistory }: Props) {
           <View style={s.headerRight}>
             <Text style={[s.headerCount, { color: C.sub }]}>{history.length}件</Text>
             {history.length > 0 && (
-              <TouchableOpacity onPress={() => setHistory([])} style={[s.clearBtn, { borderColor: C.danger }]}>
-                <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity onPress={() => exportHistoryCSV(history)} style={[s.exportBtn, { borderColor: C.pri }]}>
+                  <Text style={[s.exportBtnText, { color: C.pri }]}>CSV</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setHistory([])} style={[s.clearBtn, { borderColor: C.danger }]}>
+                  <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         </View>
@@ -117,6 +123,8 @@ const s = StyleSheet.create({
   headerCount: { fontSize: 11 },
   clearBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1 },
   clearBtnText: { fontSize: 11, fontWeight: '600' },
+  exportBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1 },
+  exportBtnText: { fontSize: 11, fontWeight: '600' },
   emptyHistory: { padding: 28, alignItems: 'center' },
   emptyText: { fontSize: 12, textAlign: 'center' },
   historyItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1 },

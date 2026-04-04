@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Switch } from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import ModalSelector from 'react-native-modal-selector';
 import { useSettings } from '../utils/SettingsContext';
 import { buildAirportSelectorOptions } from '../utils/ppCalc';
 import { AIRPORTS, NEW_DOMESTIC_FARES } from '../data/masterData';
+import { exportAllCSV } from '../utils/csvExport';
+import { HistoryItem, BookmarkItem } from '../utils/types';
 
 const airportOptions = buildAirportSelectorOptions();
 
@@ -20,7 +22,7 @@ const fareOptions = (() => {
   return data;
 })();
 
-export default function SettingsTab() {
+export default function SettingsTab({ history, bookmarks }: { history: HistoryItem[]; bookmarks: BookmarkItem[] }) {
   const { settings, updateSettings, C } = useSettings();
 
   const homeAP = AIRPORTS.find(a => a.code === settings.homeAirport);
@@ -107,6 +109,21 @@ export default function SettingsTab() {
           </View>
         </ModalSelector>
 
+      </View>
+
+      {/* データ管理 */}
+      <Text style={[s.sectionTitle, { color: C.sub }]}>データ管理</Text>
+      <View style={[s.card, { backgroundColor: C.card }]}>
+        <TouchableOpacity onPress={() => exportAllCSV(history, bookmarks)} style={[s.row, { borderBottomWidth: 0 }]}>
+          <View style={s.rowLeft}>
+            <Text style={s.rowIcon}>📦</Text>
+            <View>
+              <Text style={[s.rowLabel, { color: C.text }]}>まとめてエクスポート</Text>
+              <Text style={[s.rowSub, { color: C.sub }]}>搭乗履歴とお気に入りをCSVで出力</Text>
+            </View>
+          </View>
+          <Text style={[s.chevron, { color: C.sub }]}>›</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

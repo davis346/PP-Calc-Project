@@ -206,7 +206,7 @@ function AppContent() {
             name="設定"
             options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} C={C} /> }}
           >
-            {() => <SettingsTab />}
+            {() => <SettingsTab history={history} bookmarks={bookmarks} />}
           </Tab.Screen>
         </Tab.Navigator>
       </NavigationContainer>

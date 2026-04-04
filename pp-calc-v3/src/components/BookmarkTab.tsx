@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { BookmarkItem } from '../utils/types';
 import { useSettings } from '../utils/SettingsContext';
+import { exportBookmarksCSV } from '../utils/csvExport';
 
 interface Props {
   bookmarks: BookmarkItem[];
@@ -32,9 +33,14 @@ export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc,
           <View style={s.headerRight}>
             <Text style={[s.headerCount, { color: C.sub }]}>{bookmarks.length}件</Text>
             {bookmarks.length > 0 && (
-              <TouchableOpacity onPress={handleClearAll} style={[s.clearBtn, { borderColor: C.danger }]}>
-                <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity onPress={() => exportBookmarksCSV(bookmarks)} style={[s.exportBtn, { borderColor: C.pri }]}>
+                  <Text style={[s.exportBtnText, { color: C.pri }]}>CSV</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleClearAll} style={[s.clearBtn, { borderColor: C.danger }]}>
+                  <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         </View>
@@ -81,6 +87,8 @@ const s = StyleSheet.create({
   headerCount: { fontSize: 11 },
   clearBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1 },
   clearBtnText: { fontSize: 11, fontWeight: '600' },
+  exportBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1 },
+  exportBtnText: { fontSize: 11, fontWeight: '600' },
   empty: { padding: 40, alignItems: 'center' },
   emptyIcon: { fontSize: 32, marginBottom: 8 },
   emptyText: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
