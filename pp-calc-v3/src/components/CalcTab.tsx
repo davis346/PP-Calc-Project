@@ -5,6 +5,7 @@ import { AIRPORTS, OLD_DOMESTIC_FARES, NEW_DOMESTIC_FARES, INTL_FARES, FARE_HELP
 import { getBaseMileage, isDomestic, getRouteMultiplier, calcPP, getAirportName, buildAirportSelectorOptions } from '../utils/ppCalc';
 import { CalcResult, BookmarkItem, HistoryItem } from '../utils/types';
 import { useSettings } from '../utils/SettingsContext';
+import { usePro } from '../utils/ProContext';
 
 interface Props {
   history: HistoryItem[];
@@ -42,6 +43,7 @@ const airportOptions = buildAirportSelectorOptions();
 
 export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark, isBookmarked, onShowPro }: Props) {
   const { C, settings } = useSettings();
+  const { isPro } = usePro();
   const [dep, setDep] = useState(settings.homeAirport || "HND");
   const [arr, setArr] = useState("OKA");
   const userChangedDep = React.useRef(false);
@@ -290,9 +292,11 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
               <Text style={[s.addHistoryText, { color: C.priDk }]}>＋ 搭乗履歴に追加する</Text>
             </TouchableOpacity>
           </View>
-          <View style={[s.adBanner, { backgroundColor: C.sky }]}>
-            <Text style={[s.adText, { color: C.sub }]}>広告</Text>
-          </View>
+          {!isPro && (
+            <View style={[s.adBanner, { backgroundColor: C.sky }]}>
+              <Text style={[s.adText, { color: C.sub }]}>広告</Text>
+            </View>
+          )}
         </>
       )}
     </ScrollView>

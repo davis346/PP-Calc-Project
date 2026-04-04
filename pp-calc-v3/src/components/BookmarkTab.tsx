@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { BookmarkItem } from '../utils/types';
 import { useSettings } from '../utils/SettingsContext';
+import { usePro } from '../utils/ProContext';
 import { exportBookmarksCSV } from '../utils/csvExport';
 
 interface Props {
@@ -9,10 +10,12 @@ interface Props {
   toggleBookmark: (item: BookmarkItem) => void;
   onNavigateCalc: (dep: string, arr: string, fareId: string) => void;
   clearBookmarks: () => void;
+  onShowPro: () => void;
 }
 
-export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc, clearBookmarks }: Props) {
+export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc, clearBookmarks, onShowPro }: Props) {
   const { C } = useSettings();
+  const { isPro } = usePro();
 
   const handleClearAll = () => {
     Alert.alert(
@@ -34,9 +37,15 @@ export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc,
             <Text style={[s.headerCount, { color: C.sub }]}>{bookmarks.length}件</Text>
             {bookmarks.length > 0 && (
               <>
-                <TouchableOpacity onPress={() => exportBookmarksCSV(bookmarks)} style={[s.exportBtn, { borderColor: C.pri }]}>
-                  <Text style={[s.exportBtnText, { color: C.pri }]}>CSVで出力</Text>
-                </TouchableOpacity>
+                {isPro ? (
+                  <TouchableOpacity onPress={() => exportBookmarksCSV(bookmarks)} style={[s.exportBtn, { borderColor: C.pri }]}>
+                    <Text style={[s.exportBtnText, { color: C.pri }]}>CSVで出力</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity onPress={onShowPro} style={[s.exportBtn, { borderColor: C.sub }]}>
+                    <Text style={[s.exportBtnText, { color: C.sub }]}>🔒 CSV</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity onPress={handleClearAll} style={[s.clearBtn, { borderColor: C.danger }]}>
                   <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>
                 </TouchableOpacity>

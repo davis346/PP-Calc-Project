@@ -167,7 +167,7 @@ function AppContent() {
             name="ダッシュボード"
             options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} C={C} /> }}
           >
-            {() => <DashTab history={history} setHistory={setHistory} />}
+            {() => <DashTab history={history} setHistory={setHistory} onShowPro={() => setShowProModal(true)} />}
           </Tab.Screen>
 
           <Tab.Screen
@@ -195,6 +195,7 @@ function AppContent() {
                 bookmarks={bookmarks}
                 toggleBookmark={toggleBookmark}
                 clearBookmarks={() => setBookmarks([])}
+                onShowPro={() => setShowProModal(true)}
                 onNavigateCalc={(dep, arr, fareId) => {
                   navigationRef.current?.navigate('PP計算');
                 }}

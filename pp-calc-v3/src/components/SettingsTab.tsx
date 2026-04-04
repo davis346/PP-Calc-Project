@@ -3,11 +3,12 @@ import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import ModalSelector from 'react-native-modal-selector';
 import { useSettings } from '../utils/SettingsContext';
 import { usePro } from '../utils/ProContext';
+import { devResetPro } from '../utils/iapManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { buildAirportSelectorOptions } from '../utils/ppCalc';
 import { AIRPORTS, NEW_DOMESTIC_FARES } from '../data/masterData';
 import { exportAllCSV } from '../utils/csvExport';
 import { HistoryItem, BookmarkItem } from '../utils/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const airportOptions = buildAirportSelectorOptions();
 
@@ -47,7 +48,7 @@ export default function SettingsTab({ history, bookmarks, onShowPro }: { history
       <Text style={[s.sectionTitle, { color: C.sub }]}>表示設定</Text>
       <View style={[s.card, { backgroundColor: C.card }]}>
 
-        {/* Dark mode */}
+        {/* Dark mode — free feature */}
         <View style={[s.row, { borderBottomColor: C.bdr }]}>
           <View style={s.rowLeft}>
             <Text style={s.rowIcon}>🌙</Text>
@@ -64,69 +65,108 @@ export default function SettingsTab({ history, bookmarks, onShowPro }: { history
           />
         </View>
 
-        {/* Home airport */}
-        <ModalSelector
-          {...pickerProps}
-          data={airportOptions}
-          onChange={(o) => updateSettings({ homeAirport: o.key })}
-        >
-          <View style={[s.row, { borderBottomColor: C.bdr }]}>
-            <View style={s.rowLeft}>
-              <Text style={s.rowIcon}>🏠</Text>
-              <View>
-                <Text style={[s.rowLabel, { color: C.text }]}>ホーム空港</Text>
-                <Text style={[s.rowSub, { color: C.sub }]}>PP計算の出発地デフォルト</Text>
+        {/* Home airport — Pro only */}
+        {isPro ? (
+          <ModalSelector
+            {...pickerProps}
+            data={airportOptions}
+            onChange={(o) => updateSettings({ homeAirport: o.key })}
+          >
+            <View style={[s.row, { borderBottomColor: C.bdr }]}>
+              <View style={s.rowLeft}>
+                <Text style={s.rowIcon}>🏠</Text>
+                <View>
+                  <Text style={[s.rowLabel, { color: C.text }]}>ホーム空港</Text>
+                  <Text style={[s.rowSub, { color: C.sub }]}>PP計算の出発地デフォルト</Text>
+                </View>
+              </View>
+              <View style={[s.badge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
+                <Text style={[s.badgeText, { color: C.pri }]}>
+                  {homeAP ? `${homeAP.name}（${homeAP.code}）` : settings.homeAirport}
+                </Text>
+                <Text style={[s.chevron, { color: C.sub }]}>›</Text>
               </View>
             </View>
-            <View style={[s.badge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
-              <Text style={[s.badgeText, { color: C.pri }]}>
-                {homeAP ? `${homeAP.name}（${homeAP.code}）` : settings.homeAirport}
-              </Text>
-              <Text style={[s.chevron, { color: C.sub }]}>›</Text>
+          </ModalSelector>
+        ) : (
+          <TouchableOpacity onPress={onShowPro} style={[s.row, { borderBottomColor: C.bdr }]}>
+            <View style={s.rowLeft}>
+              <Text style={[s.rowIcon, s.locked]}>🏠</Text>
+              <View>
+                <Text style={[s.rowLabel, { color: C.sub }]}>ホーム空港</Text>
+                <Text style={[s.rowSub, { color: C.sub }]}>👑 Proで利用可能</Text>
+              </View>
             </View>
-          </View>
-        </ModalSelector>
+            <Text style={[s.lockBadge, { backgroundColor: C.sky, color: C.sub }]}>🔒</Text>
+          </TouchableOpacity>
+        )}
 
-        {/* Default fare */}
-        <ModalSelector
-          {...pickerProps}
-          data={fareOptions}
-          onChange={(o) => updateSettings({ defaultFare: o.key })}
-        >
-          <View style={[s.row, { borderBottomWidth: 0 }]}>
-            <View style={s.rowLeft}>
-              <Text style={s.rowIcon}>💳</Text>
-              <View>
-                <Text style={[s.rowLabel, { color: C.text }]}>デフォルト運賃</Text>
-                <Text style={[s.rowSub, { color: C.sub }]}>PP計算の運賃デフォルト（国内新運賃）</Text>
+        {/* Default fare — Pro only */}
+        {isPro ? (
+          <ModalSelector
+            {...pickerProps}
+            data={fareOptions}
+            onChange={(o) => updateSettings({ defaultFare: o.key })}
+          >
+            <View style={[s.row, { borderBottomWidth: 0 }]}>
+              <View style={s.rowLeft}>
+                <Text style={s.rowIcon}>💳</Text>
+                <View>
+                  <Text style={[s.rowLabel, { color: C.text }]}>デフォルト運賃</Text>
+                  <Text style={[s.rowSub, { color: C.sub }]}>PP計算の運賃デフォルト（国内新運賃）</Text>
+                </View>
+              </View>
+              <View style={[s.badge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
+                <Text style={[s.badgeText, { color: C.pri }]}>
+                  {defaultFareObj
+                    ? `${defaultFareObj.cls === 'first' ? 'ファースト' : 'エコノミー'} ${defaultFareObj.name.replace('エコノミー ', '').replace('ファースト ', '')}`
+                    : settings.defaultFare}
+                </Text>
+                <Text style={[s.chevron, { color: C.sub }]}>›</Text>
               </View>
             </View>
-            <View style={[s.badge, { backgroundColor: C.sky, borderColor: C.bdr }]}>
-              <Text style={[s.badgeText, { color: C.pri }]}>
-                {defaultFareObj
-                  ? `${defaultFareObj.cls === 'first' ? 'ファースト' : 'エコノミー'} ${defaultFareObj.name.replace('エコノミー ', '').replace('ファースト ', '')}`
-                  : settings.defaultFare}
-              </Text>
-              <Text style={[s.chevron, { color: C.sub }]}>›</Text>
+          </ModalSelector>
+        ) : (
+          <TouchableOpacity onPress={onShowPro} style={[s.row, { borderBottomWidth: 0 }]}>
+            <View style={s.rowLeft}>
+              <Text style={[s.rowIcon, s.locked]}>💳</Text>
+              <View>
+                <Text style={[s.rowLabel, { color: C.sub }]}>デフォルト運賃</Text>
+                <Text style={[s.rowSub, { color: C.sub }]}>👑 Proで利用可能</Text>
+              </View>
             </View>
-          </View>
-        </ModalSelector>
+            <Text style={[s.lockBadge, { backgroundColor: C.sky, color: C.sub }]}>🔒</Text>
+          </TouchableOpacity>
+        )}
 
       </View>
 
       {/* データ管理 */}
       <Text style={[s.sectionTitle, { color: C.sub }]}>データ管理</Text>
       <View style={[s.card, { backgroundColor: C.card }]}>
-        <TouchableOpacity onPress={() => exportAllCSV(history, bookmarks)} style={[s.row, { borderBottomWidth: 0 }]}>
-          <View style={s.rowLeft}>
-            <Text style={s.rowIcon}>📦</Text>
-            <View>
-              <Text style={[s.rowLabel, { color: C.text }]}>まとめてエクスポート</Text>
-              <Text style={[s.rowSub, { color: C.sub }]}>搭乗履歴とお気に入りをCSVで出力</Text>
+        {isPro ? (
+          <TouchableOpacity onPress={() => exportAllCSV(history, bookmarks)} style={[s.row, { borderBottomWidth: 0 }]}>
+            <View style={s.rowLeft}>
+              <Text style={s.rowIcon}>📦</Text>
+              <View>
+                <Text style={[s.rowLabel, { color: C.text }]}>まとめてエクスポート</Text>
+                <Text style={[s.rowSub, { color: C.sub }]}>搭乗履歴とお気に入りをCSVで出力</Text>
+              </View>
             </View>
-          </View>
-          <Text style={[s.chevron, { color: C.sub }]}>›</Text>
-        </TouchableOpacity>
+            <Text style={[s.chevron, { color: C.sub }]}>›</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={onShowPro} style={[s.row, { borderBottomWidth: 0 }]}>
+            <View style={s.rowLeft}>
+              <Text style={[s.rowIcon, s.locked]}>📦</Text>
+              <View>
+                <Text style={[s.rowLabel, { color: C.sub }]}>まとめてエクスポート</Text>
+                <Text style={[s.rowSub, { color: C.sub }]}>👑 Proで利用可能</Text>
+              </View>
+            </View>
+            <Text style={[s.lockBadge, { backgroundColor: C.sky, color: C.sub }]}>🔒</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Pro */}
@@ -136,8 +176,8 @@ export default function SettingsTab({ history, bookmarks, onShowPro }: { history
           <View style={s.rowLeft}>
             <Text style={s.rowIcon}>👑</Text>
             <View>
-              <Text style={[s.rowLabel, { color: C.text }]}>広告を削除</Text>
-              <Text style={[s.rowSub, { color: C.sub }]}>Proにアップグレードして広告を非表示に</Text>
+              <Text style={[s.rowLabel, { color: C.text }]}>{isPro ? 'アップグレード済み ✅' : 'Proにアップグレード'}</Text>
+              <Text style={[s.rowSub, { color: C.sub }]}>{isPro ? '全機能をご利用いただけます' : '広告削除・全機能解放 ¥100'}</Text>
             </View>
           </View>
           <Text style={[s.chevron, { color: C.sub }]}>›</Text>
@@ -154,9 +194,9 @@ export default function SettingsTab({ history, bookmarks, onShowPro }: { history
                 const next = !isPro;
                 setIsPro(next);
                 if (next) {
-                  await AsyncStorage.setItem('@is_pro', 'true');
+                  await AsyncStorage.setItem('@ppcalc_pro', 'true');
                 } else {
-                  await AsyncStorage.removeItem('@is_pro');
+                  await devResetPro();
                 }
               }}
               style={[s.row, { borderBottomWidth: 0 }]}
@@ -186,9 +226,11 @@ const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14, borderBottomWidth: 1 },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   rowIcon: { fontSize: 20 },
+  locked: { opacity: 0.4 },
   rowLabel: { fontSize: 14, fontWeight: '600' },
   rowSub: { fontSize: 11, marginTop: 2 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   badgeText: { fontSize: 12, fontWeight: '600' },
   chevron: { fontSize: 18, fontWeight: '300' },
+  lockBadge: { fontSize: 16, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, overflow: 'hidden' },
 });

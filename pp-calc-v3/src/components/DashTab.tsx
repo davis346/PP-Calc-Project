@@ -2,15 +2,18 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { HistoryItem } from '../utils/types';
 import { useSettings } from '../utils/SettingsContext';
+import { usePro } from '../utils/ProContext';
 import { exportHistoryCSV } from '../utils/csvExport';
 
 interface Props {
   history: HistoryItem[];
   setHistory: (h: HistoryItem[]) => void;
+  onShowPro: () => void;
 }
 
-export default function DashTab({ history, setHistory }: Props) {
+export default function DashTab({ history, setHistory, onShowPro }: Props) {
   const { C } = useSettings();
+  const { isPro } = usePro();
   const totalPP = history.reduce((s, h) => s + h.pp, 0);
   const totalCost = history.reduce((s, h) => s + h.price, 0);
   const prog = Math.min((totalPP / 50000) * 100, 100);
@@ -58,9 +61,15 @@ export default function DashTab({ history, setHistory }: Props) {
             <Text style={[s.headerCount, { color: C.sub }]}>{history.length}件</Text>
             {history.length > 0 && (
               <>
-                <TouchableOpacity onPress={() => exportHistoryCSV(history)} style={[s.exportBtn, { borderColor: C.pri }]}>
-                  <Text style={[s.exportBtnText, { color: C.pri }]}>CSVで出力</Text>
-                </TouchableOpacity>
+                {isPro ? (
+                  <TouchableOpacity onPress={() => exportHistoryCSV(history)} style={[s.exportBtn, { borderColor: C.pri }]}>
+                    <Text style={[s.exportBtnText, { color: C.pri }]}>CSVで出力</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity onPress={onShowPro} style={[s.exportBtn, { borderColor: C.sub }]}>
+                    <Text style={[s.exportBtnText, { color: C.sub }]}>🔒 CSV</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity onPress={() => setHistory([])} style={[s.clearBtn, { borderColor: C.danger }]}>
                   <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>
                 </TouchableOpacity>
