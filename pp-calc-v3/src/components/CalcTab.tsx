@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert, Keyboard, Platform } from 'react-native';
 import ModalSelector from 'react-native-modal-selector';
 import { AIRPORTS, OLD_DOMESTIC_FARES, NEW_DOMESTIC_FARES, INTL_FARES, FARE_HELP, Fare } from '../data/masterData';
 import { getBaseMileage, isDomestic, getRouteMultiplier, calcPP, getAirportName, buildAirportSelectorOptions } from '../utils/ppCalc';
@@ -41,6 +41,9 @@ function buildFareOptions(fares: Fare[], domestic: boolean, fareMode: string) {
 
 const airportOptions = buildAirportSelectorOptions();
 
+const INPUT_ACCESSORY_ID = 'priceInput';
+const MAX_PRICE = 1_000_000;
+
 export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark, isBookmarked, onShowPro }: Props) {
   const { C, settings } = useSettings();
   const { isPro } = usePro();
@@ -80,6 +83,7 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
   };
 
   const [price, setPrice] = useState("");
+  const [priceError, setPriceError] = useState<string | null>(null);
   const [isRound, setIsRound] = useState(true);
   const [result, setResult] = useState<CalcResult | null>(null);
 
@@ -97,7 +101,18 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
 
   const swap = () => { const t = dep; handleSetDep(arr); setArr(t); setResult(null); };
 
+  const handlePriceChange = (t: string) => {
+    setPrice(t);
+    setResult(null);
+    if (t === '') { setPriceError(null); return; }
+    if (/[^0-9]/.test(t)) { setPriceError("数字のみ入力できます（記号・文字は使用不可）"); return; }
+    const num = parseInt(t, 10);
+    if (num > MAX_PRICE) { setPriceError(`金額が大きすぎます（上限は${MAX_PRICE.toLocaleString()}円）`); return; }
+    setPriceError(null);
+  };
+
   const doCalc = useCallback(() => {
+    if (priceError) return;
     const bm = getBaseMileage(dep, arr);
     if (!bm) { Alert.alert("エラー", "この路線のデータがありません"); return; }
     const fare = fares.find(f => f.id === fareId);
@@ -105,11 +120,11 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
     const mult = getRouteMultiplier(dep, arr);
     const { flightMile, pp } = calcPP(bm, fare.rate, mult, fare.boarding);
     const totalPP = isRound ? pp * 2 : pp;
-    const numPrice = Number(price.replace(/[^0-9]/g, ""));
+    const numPrice = price === '' ? 0 : parseInt(price, 10);
     const ppUnit = numPrice > 0 ? Math.round((numPrice / totalPP) * 100) / 100 : null;
     const trips = Math.ceil(50000 / (pp * 2));
     setResult({ bm, fare, mult, flightMile, pp, totalPP, ppUnit, trips, isRound });
-  }, [dep, arr, fareId, price, isRound, fares]);
+  }, [dep, arr, fareId, price, priceError, isRound, fares]);
 
   const addHistory = () => {
     if (!result) return;
@@ -229,13 +244,24 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
         </View>
 
         <Text style={[s.label, { color: C.sub, marginTop: 14 }]}>💰 航空券価格（{isRound ? "往復" : "片道"}合計・任意）</Text>
-        <View style={[s.inputWrap, { borderColor: C.bdr, backgroundColor: C.white }]}>
-          <TextInput style={[s.input, { color: C.text }]} value={price} onChangeText={t => { setPrice(t); setResult(null); }}
-            placeholder="例: 25300" keyboardType="numeric" placeholderTextColor={C.sub} />
+        <View style={[s.inputWrap, { borderColor: priceError ? C.danger : C.bdr, backgroundColor: C.white }]}>
+          <TextInput
+            style={[s.input, { color: C.text }]}
+            value={price}
+            onChangeText={handlePriceChange}
+            placeholder="例: 25300"
+            keyboardType="numeric"
+            placeholderTextColor={C.sub}
+            maxLength={7}
+            returnKeyType="done"
+            onSubmitEditing={() => Keyboard.dismiss()}
+            inputAccessoryViewID={Platform.OS === 'ios' ? INPUT_ACCESSORY_ID : undefined}
+          />
           <Text style={[s.inputSuffix, { color: C.sub }]}>円</Text>
         </View>
+        {priceError && <Text style={s.priceError}>{priceError}</Text>}
 
-        <TouchableOpacity onPress={doCalc} style={[s.calcBtn, { backgroundColor: C.pri }]} activeOpacity={0.8}>
+        <TouchableOpacity onPress={doCalc} style={[s.calcBtn, { backgroundColor: priceError ? C.sub : C.pri }, priceError ? s.calcBtnDisabled : null]} activeOpacity={0.8}>
           <Text style={[s.calcBtnText, { color: C.white }]}>PP を計算する</Text>
         </TouchableOpacity>
       </View>
@@ -318,10 +344,12 @@ const s = StyleSheet.create({
   helpBox: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 4, marginTop: 4 },
   helpTitle: { fontSize: 10, fontWeight: '700', marginBottom: 3 },
   helpText: { fontSize: 11, lineHeight: 18 },
-  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderRadius: 10, marginBottom: 14 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderRadius: 10, marginBottom: 4 },
   input: { flex: 1, padding: 12, fontSize: 15 },
   inputSuffix: { paddingRight: 14, fontSize: 14 },
-  calcBtn: { borderRadius: 12, paddingVertical: 15, alignItems: 'center', shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 },
+  priceError: { fontSize: 11, color: '#D63031', marginBottom: 10, marginLeft: 4 },
+  calcBtn: { borderRadius: 12, paddingVertical: 15, alignItems: 'center', shadowOpacity: 0.2, shadowRadius: 8, elevation: 3, marginTop: 10 },
+  calcBtnDisabled: { shadowOpacity: 0 },
   calcBtnText: { fontSize: 16, fontWeight: '700', letterSpacing: 1 },
   resultCard: { borderRadius: 16, overflow: 'hidden', marginBottom: 14, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
   resultHeader: { padding: 20, alignItems: 'center' },
