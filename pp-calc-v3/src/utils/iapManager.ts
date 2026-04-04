@@ -28,7 +28,7 @@ export async function initIAP(): Promise<void> {
 }
 
 export async function getProducts() {
-  if (!isNativeAvailable()) return [{ productId: PRO_PRODUCT_ID, price: '¥500', title: 'PP計算機 Pro' }];
+  if (!isNativeAvailable()) return [{ productId: PRO_PRODUCT_ID, price: '¥100', title: 'PP計算機 Pro' }];
   try {
     const { results } = await InAppPurchases.getProductsAsync([PRO_PRODUCT_ID]);
     return results;

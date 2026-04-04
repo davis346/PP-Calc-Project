@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { isProUser } from './iapManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// DEV ONLY: 本番ビルド時は __DEV__ が自動的に false になるので変更不要
+const DEBUG_FORCE_PRO = __DEV__ && false; // trueにするとProとして動作
+
 interface ProContextType {
   isPro: boolean;
   setIsPro: (v: boolean) => void;
@@ -33,7 +36,7 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       // isProUser() reads from AsyncStorage only — no IAP connection needed on startup.
-      const pro = await isProUser();
+      const pro = DEBUG_FORCE_PRO || await isProUser();
       setIsPro(pro);
 
       // Load daily calc count

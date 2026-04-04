@@ -10,29 +10,26 @@ interface Props {
 }
 
 const features = [
-  { icon: "🧮", title: "PP計算 無制限", desc: "無料版は1日3回まで → 何度でも計算" },
-  { icon: "🗓️", title: "フライト管理 無制限", desc: "無料版は3件まで → 全フライトを管理" },
-  { icon: "⭐", title: "お気に入り 無制限", desc: "無料版は3件まで → 好きなだけ保存" },
-  { icon: "🌏", title: "国際線PP計算", desc: "40路線以上の国際線に対応" },
-  { icon: "📊", title: "路線ランキング全件表示", desc: "無料版は上位5件 → 全路線を比較" },
-  { icon: "📈", title: "詳細ダッシュボード", desc: "累計費用・平均PP単価などの詳細統計" },
+  { icon: "🚫", title: "広告を削除", desc: "アプリ内の広告を完全に非表示" },
+  { icon: "🏠", title: "ホーム空港の設定", desc: "PP計算の出発地をデフォルト設定" },
+  { icon: "💳", title: "デフォルト運賃の設定", desc: "よく使う運賃を初期値として保存" },
+  { icon: "📤", title: "データをCSVで出力", desc: "搭乗履歴・お気に入りをエクスポート" },
   { icon: "✨", title: "今後のPro限定機能", desc: "アップデートで随時追加" },
 ];
 
 const comparison = [
-  { feature: "PP計算", free: "1日3回", pro: "無制限" },
+  { feature: "PP計算", free: "✓", pro: "✓" },
   { feature: "新旧運賃対応", free: "✓", pro: "✓" },
   { feature: "運賃ヘルプ", free: "✓", pro: "✓" },
-  { feature: "フライト管理", free: "3件", pro: "無制限" },
-  { feature: "お気に入り", free: "3件", pro: "無制限" },
-  { feature: "国際線計算", free: "—", pro: "✓" },
-  { feature: "路線ランキング", free: "5件", pro: "全件" },
-  { feature: "詳細統計", free: "—", pro: "✓" },
+  { feature: "広告なし", free: "—", pro: "✓" },
+  { feature: "ホーム空港設定", free: "—", pro: "✓" },
+  { feature: "デフォルト運賃設定", free: "—", pro: "✓" },
+  { feature: "CSVエクスポート", free: "—", pro: "✓" },
 ];
 
 export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props) {
   const { C } = useSettings();
-  const [price, setPrice] = useState("¥500");
+  const [price, setPrice] = useState("¥100");
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
 
@@ -40,7 +37,7 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
     (async () => {
       await initIAP();
       const products = await getProducts();
-      if (products.length > 0) setPrice(products[0].price || "¥500");
+      if (products.length > 0) setPrice(products[0].price || "¥100");
     })();
 
     setPurchaseListener((success) => {
@@ -105,9 +102,7 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
 
         {/* Pricing */}
         <View style={s.pricing}>
-          <Text style={[s.pricingLabel, { color: C.sub }]}>リリース記念価格</Text>
           <View style={s.priceRow}>
-            <Text style={[s.priceOld, { color: C.sub }]}>¥800</Text>
             <Text style={[s.priceNew, { color: C.text }]}>{price}</Text>
           </View>
           <Text style={[s.priceSub, { color: C.sub }]}>買い切り・サブスクなし</Text>

@@ -2,10 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import ModalSelector from 'react-native-modal-selector';
 import { useSettings } from '../utils/SettingsContext';
+import { usePro } from '../utils/ProContext';
 import { buildAirportSelectorOptions } from '../utils/ppCalc';
 import { AIRPORTS, NEW_DOMESTIC_FARES } from '../data/masterData';
 import { exportAllCSV } from '../utils/csvExport';
 import { HistoryItem, BookmarkItem } from '../utils/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const airportOptions = buildAirportSelectorOptions();
 
@@ -22,8 +24,9 @@ const fareOptions = (() => {
   return data;
 })();
 
-export default function SettingsTab({ history, bookmarks }: { history: HistoryItem[]; bookmarks: BookmarkItem[] }) {
+export default function SettingsTab({ history, bookmarks, onShowPro }: { history: HistoryItem[]; bookmarks: BookmarkItem[]; onShowPro: () => void }) {
   const { settings, updateSettings, C } = useSettings();
+  const { isPro, setIsPro } = usePro();
 
   const homeAP = AIRPORTS.find(a => a.code === settings.homeAirport);
   const defaultFareObj = NEW_DOMESTIC_FARES.find(f => f.id === settings.defaultFare);
@@ -125,6 +128,53 @@ export default function SettingsTab({ history, bookmarks }: { history: HistoryIt
           <Text style={[s.chevron, { color: C.sub }]}>›</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Pro */}
+      <Text style={[s.sectionTitle, { color: C.sub }]}>Pro</Text>
+      <View style={[s.card, { backgroundColor: C.card }]}>
+        <TouchableOpacity onPress={onShowPro} style={[s.row, { borderBottomWidth: 0 }]}>
+          <View style={s.rowLeft}>
+            <Text style={s.rowIcon}>👑</Text>
+            <View>
+              <Text style={[s.rowLabel, { color: C.text }]}>広告を削除</Text>
+              <Text style={[s.rowSub, { color: C.sub }]}>Proにアップグレードして広告を非表示に</Text>
+            </View>
+          </View>
+          <Text style={[s.chevron, { color: C.sub }]}>›</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 🛠 Dev Tools — __DEV__ が false の本番ビルドでは表示されない */}
+      {__DEV__ && (
+        <>
+          <Text style={[s.sectionTitle, { color: C.sub }]}>🛠 DEV TOOLS</Text>
+          <View style={[s.card, { backgroundColor: C.card }]}>
+            <TouchableOpacity
+              onPress={async () => {
+                const next = !isPro;
+                setIsPro(next);
+                if (next) {
+                  await AsyncStorage.setItem('@is_pro', 'true');
+                } else {
+                  await AsyncStorage.removeItem('@is_pro');
+                }
+              }}
+              style={[s.row, { borderBottomWidth: 0 }]}
+            >
+              <View style={s.rowLeft}>
+                <Text style={s.rowIcon}>{isPro ? '🔓' : '🔒'}</Text>
+                <View>
+                  <Text style={[s.rowLabel, { color: C.text }]}>
+                    現在: {isPro ? 'Pro ✅' : '無料 ❌'}
+                  </Text>
+                  <Text style={[s.rowSub, { color: C.sub }]}>タップで切り替え</Text>
+                </View>
+              </View>
+              <Text style={[s.chevron, { color: C.sub }]}>›</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 }

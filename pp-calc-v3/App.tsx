@@ -38,7 +38,7 @@ function HeaderBar({ totalPP, prog, onProPress, isPro, C }: { totalPP: number; p
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             {!isPro && (
               <TouchableOpacity onPress={onProPress} style={{ backgroundColor: 'rgba(212,168,67,0.2)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(212,168,67,0.4)' }}>
-                <Text style={{ fontSize: 12, fontWeight: '700', color: C.acc }}>👑 Pro</Text>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: C.acc }}>👑 Proにアップグレード</Text>
               </TouchableOpacity>
             )}
             <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center' }}>
@@ -206,7 +206,7 @@ function AppContent() {
             name="設定"
             options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} C={C} /> }}
           >
-            {() => <SettingsTab history={history} bookmarks={bookmarks} />}
+            {() => <SettingsTab history={history} bookmarks={bookmarks} onShowPro={() => setShowProModal(true)} />}
           </Tab.Screen>
         </Tab.Navigator>
       </NavigationContainer>
