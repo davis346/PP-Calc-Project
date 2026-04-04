@@ -54,9 +54,24 @@ function buildFareOptions(fares: Fare[], domestic: boolean, fareMode: string) {
 const airportOptions = buildAirportOptions();
 
 export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark, isBookmarked, onShowPro }: Props) {
-  const { C } = useSettings();
-  const [dep, setDep] = useState("HND");
+  const { C, settings } = useSettings();
+  const [dep, setDep] = useState(settings.homeAirport || "HND");
   const [arr, setArr] = useState("OKA");
+  const userChangedDep = React.useRef(false);
+
+  // When homeAirport loads from AsyncStorage or user changes it in Settings,
+  // update dep — but only if the user hasn't manually picked a different airport.
+  useEffect(() => {
+    if (!userChangedDep.current) {
+      setDep(settings.homeAirport || "HND");
+    }
+  }, [settings.homeAirport]);
+
+  const handleSetDep = (code: string) => {
+    userChangedDep.current = true;
+    setDep(code);
+    setResult(null);
+  };
   const [fareMode, setFareMode] = useState<"old" | "new">("new");
   const [fareId, setFareId] = useState("new-e-std");
   const [price, setPrice] = useState("");
@@ -73,7 +88,7 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
     setResult(null);
   }, [domestic, fareMode]);
 
-  const swap = () => { const t = dep; setDep(arr); setArr(t); setResult(null); };
+  const swap = () => { const t = dep; handleSetDep(arr); setArr(t); setResult(null); };
 
   const doCalc = useCallback(() => {
     const bm = getBaseMileage(dep, arr);
@@ -131,7 +146,7 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
             <Text style={[s.label, { color: C.sub }]}>🛫 出発地</Text>
             <ModalSelector
               data={airportOptions}
-              onChange={(o) => { setDep(o.key); setResult(null); }}
+              onChange={(o) => handleSetDep(o.key)}
               style={{ borderWidth: 0 }}
               selectStyle={{ borderWidth: 0, padding: 0 }}
               selectTextStyle={{ display: 'none' }}

@@ -6,10 +6,12 @@ const SETTINGS_KEY = '@ppcalc_settings';
 
 interface Settings {
   darkMode: boolean;
+  homeAirport: string;
 }
 
 const defaultSettings: Settings = {
   darkMode: false,
+  homeAirport: 'HND',
 };
 
 interface SettingsContextType {
