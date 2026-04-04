@@ -292,11 +292,6 @@ export default function CalcTab({ history, setHistory, bookmarks, toggleBookmark
               <Text style={[s.addHistoryText, { color: C.priDk }]}>＋ 搭乗履歴に追加する</Text>
             </TouchableOpacity>
           </View>
-          {!isPro && (
-            <View style={[s.adBanner, { backgroundColor: C.sky }]}>
-              <Text style={[s.adText, { color: C.sub }]}>広告</Text>
-            </View>
-          )}
         </>
       )}
     </ScrollView>
@@ -345,6 +340,4 @@ const s = StyleSheet.create({
   tripsText: { fontSize: 12, fontWeight: '500' },
   addHistoryBtn: { paddingVertical: 13, alignItems: 'center' },
   addHistoryText: { fontSize: 13, fontWeight: '700' },
-  adBanner: { borderRadius: 8, height: 60, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  adText: { fontSize: 11 },
 });

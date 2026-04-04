@@ -1,24 +1,28 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  fetchProducts as iapFetchProducts,
+  requestPurchase,
+  getAvailablePurchases,
+  purchaseUpdatedListener,
+  purchaseErrorListener,
+  finishTransaction,
+  initConnection,
+  endConnection,
+  ErrorCode,
+} from 'expo-iap';
 
 const PRO_PRODUCT_ID = 'com.minor7.ppcalc.pro';
 const PRO_KEY = '@ppcalc_pro';
+const PRO_KEY_MOCK = '@ppcalc_pro_mock'; // Dev only — separate from real purchase key
 
-let InAppPurchases: any = null;
+let _connected = false;
 
-// Try to load native module, fallback to mock for Expo Go
-try {
-  InAppPurchases = require('expo-in-app-purchases');
-} catch {
-  InAppPurchases = null;
-}
-
-const isNativeAvailable = () => InAppPurchases !== null;
-
-// ─── Internal only. Connect lazily when the upgrade screen opens. ──────────
+// ─── Internal only. Connect lazily when the upgrade screen opens. ───────────
 async function connectIAP(): Promise<void> {
-  if (!isNativeAvailable()) return;
+  if (_connected) return;
   try {
-    await InAppPurchases.connectAsync();
+    await initConnection();
+    _connected = true;
   } catch {}
 }
 
@@ -28,54 +32,74 @@ export async function initIAP(): Promise<void> {
 }
 
 export async function getProducts() {
-  if (!isNativeAvailable()) return [{ productId: PRO_PRODUCT_ID, price: '¥100', title: 'PP計算機 Pro' }];
+  if (!_connected) return [{ id: PRO_PRODUCT_ID, displayPrice: '¥100', title: 'PP計算機 Pro' }];
   try {
-    const { results } = await InAppPurchases.getProductsAsync([PRO_PRODUCT_ID]);
-    return results;
+    const products = await iapFetchProducts({ skus: [PRO_PRODUCT_ID], type: 'in-app' });
+    return products;
   } catch {
     return [];
   }
 }
 
 export async function purchasePro(): Promise<boolean> {
-  if (!isNativeAvailable()) {
-    // Mock purchase for dev
-    await AsyncStorage.setItem(PRO_KEY, 'true');
+  if (!_connected) {
+    // Mock purchase for dev — uses separate key so restore doesn't find it
+    await AsyncStorage.setItem(PRO_KEY_MOCK, 'true');
     return true;
   }
   try {
-    await InAppPurchases.purchaseItemAsync(PRO_PRODUCT_ID);
+    await requestPurchase({
+      request: {
+        apple: { sku: PRO_PRODUCT_ID },
+        google: { skus: [PRO_PRODUCT_ID] },
+      },
+      type: 'in-app',
+    });
+    // Actual result comes via purchaseUpdatedListener
     return true;
-  } catch {
+  } catch (e: any) {
+    if (e?.code === ErrorCode.UserCancelled) return false;
     return false;
   }
 }
 
 export function setPurchaseListener(onPurchase: (success: boolean) => void) {
-  if (!isNativeAvailable()) return;
-  InAppPurchases.setPurchaseListener(async ({ responseCode, results }: any) => {
-    if (responseCode === InAppPurchases.IAPResponseCode.OK && results) {
-      for (const purchase of results) {
-        if (!purchase.acknowledged) {
-          await InAppPurchases.finishTransactionAsync(purchase, false);
-        }
+  if (!_connected) return () => {};
+
+  const successSub = purchaseUpdatedListener(async (purchase) => {
+    if (purchase.purchaseState === 'purchased') {
+      try {
+        await finishTransaction({ purchase, isConsumable: false });
+        await AsyncStorage.setItem(PRO_KEY, 'true');
+        onPurchase(true);
+      } catch {
+        onPurchase(false);
       }
-      await AsyncStorage.setItem(PRO_KEY, 'true');
-      onPurchase(true);
-    } else {
+    }
+  });
+
+  const errorSub = purchaseErrorListener((error) => {
+    if (error.code !== ErrorCode.UserCancelled) {
       onPurchase(false);
     }
   });
+
+  // Return cleanup function
+  return () => {
+    successSub.remove();
+    errorSub.remove();
+  };
 }
 
 export async function restorePurchases(): Promise<boolean> {
-  if (!isNativeAvailable()) {
-    const val = await AsyncStorage.getItem(PRO_KEY);
-    return val === 'true';
+  if (!_connected) {
+    // In dev/Expo Go there's no real store to restore from — always return false
+    return false;
   }
   try {
-    const { results } = await InAppPurchases.getPurchaseHistoryAsync();
-    if (results && results.some((p: any) => p.productId === PRO_PRODUCT_ID)) {
+    const purchases = await getAvailablePurchases();
+    const hasPro = purchases.some((p) => p.productId === PRO_PRODUCT_ID);
+    if (hasPro) {
       await AsyncStorage.setItem(PRO_KEY, 'true');
       return true;
     }
@@ -94,9 +118,16 @@ export async function isProUser(): Promise<boolean> {
   }
 }
 
+// DEV ONLY — clears both real and mock purchase keys
+export async function devResetPro(): Promise<void> {
+  await AsyncStorage.removeItem(PRO_KEY);
+  await AsyncStorage.removeItem(PRO_KEY_MOCK);
+}
+
 export async function disconnectIAP(): Promise<void> {
-  if (!isNativeAvailable()) return;
+  if (!_connected) return;
   try {
-    await InAppPurchases.disconnectAsync();
+    await endConnection();
+    _connected = false;
   } catch {}
 }

@@ -42,14 +42,17 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
     })();
 
     // Listener for native IAP (real device / App Store)
-    setPurchaseListener((success) => {
+    const cleanup = setPurchaseListener((success) => {
       setLoading(false);
       if (success) {
         setShowThankYou(true);
       }
     });
 
-    return () => { disconnectIAP(); };
+    return () => {
+      cleanup?.();
+      disconnectIAP();
+    };
   }, []);
 
   const handlePurchase = async () => {

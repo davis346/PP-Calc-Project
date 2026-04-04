@@ -76,6 +76,7 @@ function AppContent() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [showProModal, setShowProModal] = useState(false);
+  const [currentTab, setCurrentTab] = useState('PP計算');
   const navigationRef = useRef<any>(null);
   const { isPro, setIsPro } = usePro();
   const { settings, C } = useSettings();
@@ -131,6 +132,9 @@ function AppContent() {
         backgroundColor={C.priDk}
       />
       <HeaderBar totalPP={totalPP} prog={prog} onProPress={() => setShowProModal(true)} isPro={isPro} C={C} />
+
+      {/* TODO: AdMob banner goes here once integrated */}
+
       <NavigationContainer ref={navigationRef}>
         <Tab.Navigator
           screenOptions={{
@@ -145,6 +149,13 @@ function AppContent() {
               height: Platform.OS === 'ios' ? 88 : 60,
             },
             tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+          }}
+          screenListeners={{
+            state: (e) => {
+              const index = e.data.state.index;
+              const routeName = e.data.state.routeNames[index];
+              setCurrentTab(routeName);
+            },
           }}
         >
           <Tab.Screen
