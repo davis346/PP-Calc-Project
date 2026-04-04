@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { C } from '../utils/colors';
 import { getProducts, purchasePro, restorePurchases, setPurchaseListener, initIAP, disconnectIAP } from '../utils/iapManager';
+import { useSettings } from '../utils/SettingsContext';
 
 interface Props {
   onClose: () => void;
@@ -31,18 +31,16 @@ const comparison = [
 ];
 
 export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props) {
+  const { C } = useSettings();
   const [price, setPrice] = useState("¥500");
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
-    // Connect to IAP only when this screen is open, not on app startup.
     (async () => {
       await initIAP();
       const products = await getProducts();
-      if (products.length > 0) {
-        setPrice(products[0].price || "¥500");
-      }
+      if (products.length > 0) setPrice(products[0].price || "¥500");
     })();
 
     setPurchaseListener((success) => {
@@ -53,7 +51,6 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
       }
     });
 
-    // Disconnect when screen closes to avoid keeping a live IAP session.
     return () => { disconnectIAP(); };
   }, []);
 
@@ -76,18 +73,18 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
   };
 
   return (
-    <View style={s.overlay}>
-      <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 50 }}>
+    <View style={{ flex: 1, backgroundColor: C.sky }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 50 }}>
         {/* Close */}
-        <TouchableOpacity onPress={onClose} style={s.closeBtn}>
-          <Text style={s.closeText}>✕</Text>
+        <TouchableOpacity onPress={onClose} style={[s.closeBtn, { backgroundColor: C.white }]}>
+          <Text style={[s.closeText, { color: C.text }]}>✕</Text>
         </TouchableOpacity>
 
         {/* Header */}
         <View style={s.header}>
-          <Text style={s.appName}>PP計算機</Text>
-          <View style={s.proBadge}>
-            <Text style={s.proBadgeText}>👑 Pro</Text>
+          <Text style={[s.appName, { color: C.pri }]}>PP計算機</Text>
+          <View style={[s.proBadge, { backgroundColor: C.pri }]}>
+            <Text style={[s.proBadgeText, { color: C.acc }]}>👑 Pro</Text>
           </View>
         </View>
 
@@ -95,10 +92,12 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
         <View style={s.featureList}>
           {features.map((f, i) => (
             <View key={i} style={[s.featureRow, i < features.length - 1 && { borderBottomWidth: 1, borderBottomColor: C.bdr }]}>
-              <View style={s.featureIcon}><Text style={{ fontSize: 20 }}>{f.icon}</Text></View>
+              <View style={[s.featureIcon, { backgroundColor: C.skyDp }]}>
+                <Text style={{ fontSize: 20 }}>{f.icon}</Text>
+              </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.featureTitle}>{f.title}</Text>
-                <Text style={s.featureDesc}>{f.desc}</Text>
+                <Text style={[s.featureTitle, { color: C.text }]}>{f.title}</Text>
+                <Text style={[s.featureDesc, { color: C.sub }]}>{f.desc}</Text>
               </View>
             </View>
           ))}
@@ -106,25 +105,25 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
 
         {/* Pricing */}
         <View style={s.pricing}>
-          <Text style={s.pricingLabel}>リリース記念価格</Text>
+          <Text style={[s.pricingLabel, { color: C.sub }]}>リリース記念価格</Text>
           <View style={s.priceRow}>
-            <Text style={s.priceOld}>¥800</Text>
-            <Text style={s.priceNew}>{price}</Text>
+            <Text style={[s.priceOld, { color: C.sub }]}>¥800</Text>
+            <Text style={[s.priceNew, { color: C.text }]}>{price}</Text>
           </View>
-          <Text style={s.priceSub}>買い切り・サブスクなし</Text>
+          <Text style={[s.priceSub, { color: C.sub }]}>買い切り・サブスクなし</Text>
         </View>
 
         {/* CTA */}
         {isPro ? (
           <View style={[s.ctaBtn, { backgroundColor: C.sub }]}>
-            <Text style={s.ctaText}>✓ アップグレード済み</Text>
+            <Text style={[s.ctaText, { color: C.white }]}>✓ アップグレード済み</Text>
           </View>
         ) : (
-          <TouchableOpacity onPress={handlePurchase} style={s.ctaBtn} activeOpacity={0.8} disabled={loading}>
+          <TouchableOpacity onPress={handlePurchase} style={[s.ctaBtn, { backgroundColor: C.pri }]} activeOpacity={0.8} disabled={loading}>
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text style={s.ctaText}>アップグレードする</Text>
+              <Text style={[s.ctaText, { color: C.white }]}>アップグレードする</Text>
             )}
           </TouchableOpacity>
         )}
@@ -132,20 +131,20 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
         {/* Restore */}
         {!isPro && (
           <TouchableOpacity onPress={handleRestore} style={s.restoreBtn} disabled={restoring}>
-            <Text style={s.restoreText}>{restoring ? "復元中..." : "購入を復元"}</Text>
+            <Text style={[s.restoreText, { color: C.sub }]}>{restoring ? "復元中..." : "購入を復元"}</Text>
           </TouchableOpacity>
         )}
 
         {/* Comparison table */}
-        <View style={s.table}>
-          <View style={s.tableHeader}>
-            <Text style={[s.tableHeaderCell, { flex: 1, textAlign: 'left' }]}>機能</Text>
-            <Text style={[s.tableHeaderCell, { width: 65 }]}>無料</Text>
+        <View style={[s.table, { borderColor: C.bdr }]}>
+          <View style={[s.tableHeader, { backgroundColor: C.sky }]}>
+            <Text style={[s.tableHeaderCell, { flex: 1, textAlign: 'left', color: C.text }]}>機能</Text>
+            <Text style={[s.tableHeaderCell, { width: 65, color: C.text }]}>無料</Text>
             <Text style={[s.tableHeaderCell, { width: 65, color: C.acc }]}>Pro</Text>
           </View>
           {comparison.map((row, i) => (
-            <View key={i} style={[s.tableRow, { backgroundColor: i % 2 === 0 ? C.white : C.bg }]}>
-              <Text style={[s.tableCell, { flex: 1, textAlign: 'left' }]}>{row.feature}</Text>
+            <View key={i} style={[s.tableRow, { backgroundColor: i % 2 === 0 ? C.white : C.bg, borderTopColor: C.bdr }]}>
+              <Text style={[s.tableCell, { flex: 1, textAlign: 'left', color: C.text }]}>{row.feature}</Text>
               <Text style={[s.tableCell, { width: 65, color: C.sub }]}>{row.free}</Text>
               <Text style={[s.tableCell, { width: 65, color: C.pri, fontWeight: '600' }]}>{row.pro}</Text>
             </View>
@@ -157,32 +156,30 @@ export default function ProUpgradeScreen({ onClose, onPurchased, isPro }: Props)
 }
 
 const s = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: C.sky },
-  container: { flex: 1 },
-  closeBtn: { position: 'absolute', top: 16, left: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: C.white, alignItems: 'center', justifyContent: 'center', zIndex: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
-  closeText: { fontSize: 18, color: C.text },
+  closeBtn: { position: 'absolute', top: 16, left: 16, width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', zIndex: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
+  closeText: { fontSize: 18 },
   header: { alignItems: 'center', paddingTop: 60, paddingBottom: 10 },
-  appName: { fontSize: 28, fontWeight: '900', color: C.pri },
-  proBadge: { backgroundColor: C.pri, borderRadius: 20, paddingHorizontal: 18, paddingVertical: 6, marginTop: 10, flexDirection: 'row', alignItems: 'center' },
-  proBadgeText: { fontSize: 14, fontWeight: '700', color: C.acc, letterSpacing: 1 },
+  appName: { fontSize: 28, fontWeight: '900' },
+  proBadge: { borderRadius: 20, paddingHorizontal: 18, paddingVertical: 6, marginTop: 10, flexDirection: 'row', alignItems: 'center' },
+  proBadgeText: { fontSize: 14, fontWeight: '700', letterSpacing: 1 },
   featureList: { marginHorizontal: 28, marginTop: 24 },
   featureRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, gap: 14 },
-  featureIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: `${C.sky}`, alignItems: 'center', justifyContent: 'center' },
-  featureTitle: { fontSize: 15, fontWeight: '700', color: C.text },
-  featureDesc: { fontSize: 12, color: C.sub, marginTop: 2 },
+  featureIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  featureTitle: { fontSize: 15, fontWeight: '700' },
+  featureDesc: { fontSize: 12, marginTop: 2 },
   pricing: { alignItems: 'center', marginTop: 32 },
-  pricingLabel: { fontSize: 13, color: C.sub },
+  pricingLabel: { fontSize: 13 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: 8 },
-  priceOld: { fontSize: 18, color: C.sub, textDecorationLine: 'line-through' },
-  priceNew: { fontSize: 48, fontWeight: '800', color: C.text },
-  priceSub: { fontSize: 13, color: C.sub, marginTop: 4 },
-  ctaBtn: { marginHorizontal: 28, marginTop: 24, backgroundColor: C.pri, borderRadius: 16, paddingVertical: 18, alignItems: 'center', shadowColor: C.pri, shadowOpacity: 0.3, shadowRadius: 12, elevation: 4 },
-  ctaText: { color: C.white, fontSize: 17, fontWeight: '700' },
+  priceOld: { fontSize: 18, textDecorationLine: 'line-through' },
+  priceNew: { fontSize: 48, fontWeight: '800' },
+  priceSub: { fontSize: 13, marginTop: 4 },
+  ctaBtn: { marginHorizontal: 28, marginTop: 24, borderRadius: 16, paddingVertical: 18, alignItems: 'center', shadowOpacity: 0.3, shadowRadius: 12, elevation: 4 },
+  ctaText: { fontSize: 17, fontWeight: '700' },
   restoreBtn: { alignItems: 'center', marginTop: 12, padding: 8 },
-  restoreText: { fontSize: 13, color: C.sub },
-  table: { marginHorizontal: 28, marginTop: 32, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: C.bdr },
-  tableHeader: { flexDirection: 'row', padding: 12, backgroundColor: C.sky },
-  tableHeaderCell: { fontSize: 13, fontWeight: '700', color: C.text, textAlign: 'center' },
-  tableRow: { flexDirection: 'row', paddingVertical: 11, paddingHorizontal: 12, borderTopWidth: 1, borderTopColor: C.bdr },
-  tableCell: { fontSize: 13, color: C.text, textAlign: 'center' },
+  restoreText: { fontSize: 13 },
+  table: { marginHorizontal: 28, marginTop: 32, borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
+  tableHeader: { flexDirection: 'row', padding: 12 },
+  tableHeaderCell: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  tableRow: { flexDirection: 'row', paddingVertical: 11, paddingHorizontal: 12, borderTopWidth: 1 },
+  tableCell: { fontSize: 13, textAlign: 'center' },
 });

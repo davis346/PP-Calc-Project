@@ -6,98 +6,70 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { C } from './src/utils/colors';
 import { HistoryItem, BookmarkItem } from './src/utils/types';
 import { ProProvider, usePro } from './src/utils/ProContext';
+import { SettingsProvider, useSettings } from './src/utils/SettingsContext';
 import CalcTab from './src/components/CalcTab';
 import ListTab from './src/components/ListTab';
 import BookmarkTab from './src/components/BookmarkTab';
 import DashTab from './src/components/DashTab';
 import ProUpgradeScreen from './src/components/ProUpgradeScreen';
+import SettingsTab from './src/components/SettingsTab';
 
 const Tab = createBottomTabNavigator();
 
 const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight || 24);
 
-function HeaderBar({ totalPP, prog, onProPress, isPro }: { totalPP: number; prog: number; onProPress: () => void; isPro: boolean }) {
+function HeaderBar({ totalPP, prog, onProPress, isPro, C }: { totalPP: number; prog: number; onProPress: () => void; isPro: boolean; C: typeof import('./src/utils/colors').C }) {
   return (
-    <View style={[h.safeArea, { paddingTop: STATUSBAR_HEIGHT }]}>
-      <View style={h.container}>
-        <View style={h.topRow}>
+    <View style={{ backgroundColor: C.pri, paddingTop: STATUSBAR_HEIGHT }}>
+      <View style={{ paddingBottom: 12, paddingHorizontal: 20, paddingTop: 8 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
-            <View style={h.titleRow}>
-              <Text style={h.icon}>✈️</Text>
-              <Text style={h.title}>PP Calculator</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={{ fontSize: 22 }}>✈️</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: C.white }}>PP Calculator</Text>
               {isPro && (
-                <View style={h.proBadgeSmall}>
-                  <Text style={h.proBadgeSmallText}>Pro</Text>
+                <View style={{ backgroundColor: C.acc, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: C.priDk }}>Pro</Text>
                 </View>
               )}
             </View>
-            <Text style={h.subtitle}>SFC修行サポートツール</Text>
+            <Text style={{ fontSize: 10, color: C.accLt, marginTop: 2, letterSpacing: 1 }}>SFC修行サポートツール</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             {!isPro && (
-              <TouchableOpacity onPress={onProPress} style={h.upgradeBtn}>
-                <Text style={h.upgradeBtnText}>👑 Pro</Text>
+              <TouchableOpacity onPress={onProPress} style={{ backgroundColor: 'rgba(212,168,67,0.2)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(212,168,67,0.4)' }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: C.acc }}>👑 Pro</Text>
               </TouchableOpacity>
             )}
-            <View style={h.ppBox}>
-              <Text style={h.ppLabel}>累計PP</Text>
-              <Text style={h.ppValue}>{totalPP.toLocaleString()}</Text>
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center' }}>
+              <Text style={{ fontSize: 9, color: C.accLt }}>累計PP</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: C.acc }}>{totalPP.toLocaleString()}</Text>
             </View>
           </View>
         </View>
-        <View style={h.barBg}>
-          <View style={[h.barFill, { width: `${Math.min(prog, 100)}%` }]} />
+        <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4, marginTop: 10, overflow: 'hidden' }}>
+          <View style={{ height: '100%', borderRadius: 4, backgroundColor: C.acc, width: `${Math.min(prog, 100)}%` as any }} />
         </View>
-        <View style={h.barLabels}>
-          <Text style={h.barText}>0</Text>
-          <Text style={h.barText}>残り {Math.max(0, 50000 - totalPP).toLocaleString()}PP</Text>
-          <Text style={h.barText}>50,000PP</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 3 }}>
+          <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>0</Text>
+          <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>残り {Math.max(0, 50000 - totalPP).toLocaleString()}PP</Text>
+          <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>50,000PP</Text>
         </View>
       </View>
     </View>
   );
 }
 
-const h = StyleSheet.create({
-  safeArea: { backgroundColor: C.pri },
-  container: { paddingBottom: 12, paddingHorizontal: 20, paddingTop: 8 },
-  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  icon: { fontSize: 22 },
-  title: { fontSize: 18, fontWeight: '700', color: C.white },
-  subtitle: { fontSize: 10, color: C.accLt, marginTop: 2, letterSpacing: 1 },
-  proBadgeSmall: { backgroundColor: C.acc, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  proBadgeSmallText: { fontSize: 10, fontWeight: '700', color: C.priDk },
-  upgradeBtn: { backgroundColor: 'rgba(212,168,67,0.2)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(212,168,67,0.4)' },
-  upgradeBtnText: { fontSize: 12, fontWeight: '700', color: C.acc },
-  ppBox: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center' },
-  ppLabel: { fontSize: 9, color: C.accLt },
-  ppValue: { fontSize: 18, fontWeight: '700', color: C.acc },
-  barBg: { height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4, marginTop: 10, overflow: 'hidden' },
-  barFill: { height: '100%', borderRadius: 4, backgroundColor: C.acc },
-  barLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 3 },
-  barText: { fontSize: 9, color: 'rgba(255,255,255,0.4)' },
-});
-
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+function TabIcon({ emoji, focused, C }: { emoji: string; focused: boolean; C: typeof import('./src/utils/colors').C }) {
   return (
-    <View style={[ti.wrap, focused && ti.wrapActive]}>
+    <View style={[ti.wrap, focused && { backgroundColor: C.pri }]}>
       <Text style={{ fontSize: 20 }}>{emoji}</Text>
     </View>
   );
 }
 
 const ti = StyleSheet.create({
-  wrap: {
-    width: 44,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  wrapActive: {
-    backgroundColor: C.pri,
-  },
+  wrap: { width: 44, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
 });
 
 function AppContent() {
@@ -106,8 +78,8 @@ function AppContent() {
   const [showProModal, setShowProModal] = useState(false);
   const navigationRef = useRef<any>(null);
   const { isPro, setIsPro } = usePro();
+  const { settings, C } = useSettings();
 
-  // Track whether initial load from AsyncStorage is complete
   const loadedRef = useRef({ history: false, bookmarks: false });
 
   useEffect(() => {
@@ -122,7 +94,6 @@ function AppContent() {
     })();
   }, []);
 
-  // Only save after initial load is complete, to avoid overwriting with empty []
   useEffect(() => {
     if (!loadedRef.current.history) return;
     AsyncStorage.setItem('history', JSON.stringify(history)).catch(() => {});
@@ -155,8 +126,11 @@ function AppContent() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={0}
     >
-      <StatusBar barStyle="light-content" backgroundColor={C.priDk} />
-      <HeaderBar totalPP={totalPP} prog={prog} onProPress={() => setShowProModal(true)} isPro={isPro} />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={C.priDk}
+      />
+      <HeaderBar totalPP={totalPP} prog={prog} onProPress={() => setShowProModal(true)} isPro={isPro} C={C} />
       <NavigationContainer ref={navigationRef}>
         <Tab.Navigator
           screenOptions={{
@@ -175,9 +149,7 @@ function AppContent() {
         >
           <Tab.Screen
             name="PP計算"
-            options={{
-              tabBarIcon: ({ focused }) => <TabIcon emoji="✏️" focused={focused} />,
-            }}
+            options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="✏️" focused={focused} C={C} /> }}
           >
             {() => (
               <CalcTab
@@ -193,18 +165,14 @@ function AppContent() {
 
           <Tab.Screen
             name="ダッシュボード"
-            options={{
-              tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
-            }}
+            options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} C={C} /> }}
           >
             {() => <DashTab history={history} setHistory={setHistory} />}
           </Tab.Screen>
 
           <Tab.Screen
             name="フライト管理"
-            options={{
-              tabBarIcon: ({ focused }) => <TabIcon emoji="🗓️" focused={focused} />,
-            }}
+            options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🗓️" focused={focused} C={C} /> }}
           >
             {() => (
               <ListTab
@@ -218,7 +186,7 @@ function AppContent() {
           <Tab.Screen
             name="お気に入り"
             options={{
-              tabBarIcon: ({ focused }) => <TabIcon emoji="⭐" focused={focused} />,
+              tabBarIcon: ({ focused }) => <TabIcon emoji="⭐" focused={focused} C={C} />,
               tabBarBadge: bookmarks.length > 0 ? bookmarks.length : undefined,
             }}
           >
@@ -232,6 +200,13 @@ function AppContent() {
                 }}
               />
             )}
+          </Tab.Screen>
+
+          <Tab.Screen
+            name="設定"
+            options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} C={C} /> }}
+          >
+            {() => <SettingsTab />}
           </Tab.Screen>
         </Tab.Navigator>
       </NavigationContainer>
@@ -249,8 +224,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ProProvider>
-      <AppContent />
-    </ProProvider>
+    <SettingsProvider>
+      <ProProvider>
+        <AppContent />
+      </ProProvider>
+    </SettingsProvider>
   );
 }

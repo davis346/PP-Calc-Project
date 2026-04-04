@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { C } from '../utils/colors';
 import { BookmarkItem } from '../utils/types';
+import { useSettings } from '../utils/SettingsContext';
 
 interface Props {
   bookmarks: BookmarkItem[];
@@ -11,31 +11,29 @@ interface Props {
 }
 
 export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc, clearBookmarks }: Props) {
+  const { C } = useSettings();
+
   const handleClearAll = () => {
     Alert.alert(
       'お気に入りを全削除',
       `${bookmarks.length}件のお気に入りをすべて削除しますか？`,
       [
         { text: 'キャンセル', style: 'cancel' },
-        {
-          text: '全削除',
-          style: 'destructive',
-          onPress: clearBookmarks,
-        },
+        { text: '全削除', style: 'destructive', onPress: clearBookmarks },
       ]
     );
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 100 }}>
-      <View style={s.card}>
-        <View style={s.header}>
-          <Text style={s.headerTitle}>★ お気に入り路線</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: C.bg, padding: 14 }}>
+      <View style={[s.card, { backgroundColor: C.card }]}>
+        <View style={[s.header, { borderBottomColor: C.bdr }]}>
+          <Text style={[s.headerTitle, { color: C.text }]}>★ お気に入り路線</Text>
           <View style={s.headerRight}>
-            <Text style={s.headerCount}>{bookmarks.length}件</Text>
+            <Text style={[s.headerCount, { color: C.sub }]}>{bookmarks.length}件</Text>
             {bookmarks.length > 0 && (
-              <TouchableOpacity onPress={handleClearAll} style={s.clearBtn}>
-                <Text style={s.clearBtnText}>全削除</Text>
+              <TouchableOpacity onPress={handleClearAll} style={[s.clearBtn, { borderColor: C.danger }]}>
+                <Text style={[s.clearBtnText, { color: C.danger }]}>全削除</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -43,28 +41,28 @@ export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc,
 
         {bookmarks.length === 0 ? (
           <View style={s.empty}>
-            <Text style={s.emptyIcon}>☆</Text>
-            <Text style={s.emptyText}>PP計算結果や路線一覧から{'\n'}★をタップして追加できます</Text>
+            <Text style={[s.emptyIcon, { color: C.sub }]}>☆</Text>
+            <Text style={[s.emptyText, { color: C.sub }]}>PP計算結果や路線一覧から{'\n'}★をタップして追加できます</Text>
           </View>
         ) : (
           bookmarks.map((b, i) => (
-            <View key={i} style={[s.item, { backgroundColor: i % 2 === 0 ? C.white : C.bg }]}>
+            <View key={i} style={[s.item, { backgroundColor: i % 2 === 0 ? C.white : C.bg, borderBottomColor: C.bdr }]}>
               <View style={s.itemTop}>
                 <View style={{ flex: 1 }}>
-                  <Text style={s.route}>{b.route}</Text>
-                  <Text style={s.fare}>{b.fare}</Text>
+                  <Text style={[s.route, { color: C.text }]}>{b.route}</Text>
+                  <Text style={[s.fare, { color: C.sub }]}>{b.fare}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={s.ppValue}>{b.ppRound?.toLocaleString()} <Text style={s.ppLabel}>PP/往復</Text></Text>
-                  <Text style={s.subInfo}>{b.trips}往復で達成{b.ppUnit ? ` ・ 単価${b.ppUnit.toFixed(1)}円` : ""}</Text>
+                  <Text style={[s.ppValue, { color: C.pri }]}>{b.ppRound?.toLocaleString()} <Text style={[s.ppLabel, { color: C.sub }]}>PP/往復</Text></Text>
+                  <Text style={[s.subInfo, { color: C.sub }]}>{b.trips}往復で達成{b.ppUnit ? ` ・ 単価${b.ppUnit.toFixed(1)}円` : ""}</Text>
                 </View>
               </View>
               <View style={s.actions}>
-                <TouchableOpacity onPress={() => onNavigateCalc(b.dep, b.arr, b.fareId)} style={s.calcAction}>
-                  <Text style={s.calcActionText}>この条件で計算</Text>
+                <TouchableOpacity onPress={() => onNavigateCalc(b.dep, b.arr, b.fareId)} style={[s.calcAction, { borderColor: C.pri }]}>
+                  <Text style={[s.calcActionText, { color: C.pri }]}>この条件で計算</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => toggleBookmark(b)} style={s.deleteAction}>
-                  <Text style={s.deleteActionText}>削除</Text>
+                <TouchableOpacity onPress={() => toggleBookmark(b)} style={[s.deleteAction, { borderColor: C.danger }]}>
+                  <Text style={[s.deleteActionText, { color: C.danger }]}>削除</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -76,27 +74,26 @@ export default function BookmarkTab({ bookmarks, toggleBookmark, onNavigateCalc,
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 14 },
-  card: { backgroundColor: C.card, borderRadius: 14, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: C.bdr },
-  headerTitle: { fontSize: 13, fontWeight: '700', color: C.text },
+  card: { borderRadius: 14, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1 },
+  headerTitle: { fontSize: 13, fontWeight: '700' },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headerCount: { fontSize: 11, color: C.sub },
-  clearBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: C.danger },
-  clearBtnText: { fontSize: 11, fontWeight: '600', color: C.danger },
+  headerCount: { fontSize: 11 },
+  clearBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1 },
+  clearBtnText: { fontSize: 11, fontWeight: '600' },
   empty: { padding: 40, alignItems: 'center' },
-  emptyIcon: { fontSize: 32, color: C.sub, marginBottom: 8 },
-  emptyText: { fontSize: 13, color: C.sub, textAlign: 'center', lineHeight: 20 },
-  item: { padding: 14, borderBottomWidth: 1, borderBottomColor: C.bdr },
+  emptyIcon: { fontSize: 32, marginBottom: 8 },
+  emptyText: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  item: { padding: 14, borderBottomWidth: 1 },
   itemTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  route: { fontSize: 14, fontWeight: '700', color: C.text },
-  fare: { fontSize: 10, color: C.sub, marginTop: 2 },
-  ppValue: { fontSize: 18, fontWeight: '700', color: C.pri },
-  ppLabel: { fontSize: 10, fontWeight: '400', color: C.sub },
-  subInfo: { fontSize: 10, color: C.sub, marginTop: 2 },
+  route: { fontSize: 14, fontWeight: '700' },
+  fare: { fontSize: 10, marginTop: 2 },
+  ppValue: { fontSize: 18, fontWeight: '700' },
+  ppLabel: { fontSize: 10, fontWeight: '400' },
+  subInfo: { fontSize: 10, marginTop: 2 },
   actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  calcAction: { flex: 1, paddingVertical: 7, borderRadius: 6, borderWidth: 1, borderColor: C.pri, alignItems: 'center' },
-  calcActionText: { fontSize: 11, fontWeight: '600', color: C.pri },
-  deleteAction: { paddingVertical: 7, paddingHorizontal: 14, borderRadius: 6, borderWidth: 1, borderColor: C.danger },
-  deleteActionText: { fontSize: 11, fontWeight: '600', color: C.danger },
+  calcAction: { flex: 1, paddingVertical: 7, borderRadius: 6, borderWidth: 1, alignItems: 'center' },
+  calcActionText: { fontSize: 11, fontWeight: '600' },
+  deleteAction: { paddingVertical: 7, paddingHorizontal: 14, borderRadius: 6, borderWidth: 1 },
+  deleteActionText: { fontSize: 11, fontWeight: '600' },
 });
