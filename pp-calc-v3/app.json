@@ -15,10 +15,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.minor7.ppcalc",
+      "buildNumber": "10",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    },
+    }
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
