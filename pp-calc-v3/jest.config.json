@@ -8,9 +8,5 @@
   "testMatch": ["**/__tests__/**/*.test.ts"],
   "transform": {
     "^.+\\.tsx?$": ["ts-jest", { "tsconfig": { "jsx": "react" } }]
-  },
-  "reporters": [
-    "default",
-    "./test-report/test-reporter.js"
-  ]
+  }
 }
