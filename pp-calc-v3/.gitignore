@@ -1,3 +1,4 @@
 node_modules/
 .expo/
 test-report/
+!test-report/test-reporter.js
